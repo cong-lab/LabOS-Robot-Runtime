@@ -2,26 +2,6 @@
 
 `run_mcp.py` exposes the LabOS Robot Runtime as a remote MCP device using the LabOS Python API (`labos.mcp.RemoteMCP`). The robot opens an outbound WebSocket connection to a LabOS relay. Remote agents call registered tools through the relay, while the local runtime streams progress, logs, structured events, and fatal robot errors back to the agent.
 
-## Architecture
-
-```mermaid
-sequenceDiagram
-    participant Agent
-    participant Relay
-    participant MCP as RemoteMCP
-    participant Runner as ProtocolRunner
-    participant Robot
-
-    MCP->>Relay: tools.register
-    Agent->>Relay: tool.call start_protocol
-    Relay->>MCP: tool.call start_protocol
-    MCP->>Runner: run_protocol
-    Runner->>Robot: execute YAML steps
-    MCP->>Relay: tool.progress / protocol.progress
-    Relay->>Agent: streamed status
-    MCP->>Relay: tool.result or tool.fatal
-```
-
 `run_mock_mcp.py` uses the same tool definitions but sets `MOCK_MODE=1`, so the protocol runner emits fake step progress and never touches the arm, camera, or end-effectors.
 
 ## Configuration
