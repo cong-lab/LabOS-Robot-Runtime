@@ -15,7 +15,7 @@ cp .env.example .env
 ./run.sh --mock  # --mock => do not connect to robot and headless/no vision processing
 ```
 
-## Step 0 - Install
+## Install
 
 Run commands from the repository root. The runtime expects Python 3.10 or newer, `git`, and `pip`.
 
@@ -50,9 +50,9 @@ python -m pip install -e ./deps/LabOS-Python-API
 
 Some vision workflows may also need GPU-specific PyTorch or CUDA packages depending on the machine. Install those according to the camera workstation's environment before running training or model-heavy vision scripts.
 
-## Step 1 - Hardware Setup
+## Hardware Setup
 
-The runtime is intended for a single UFactory xArm or a bimanual xArm setup. If you are testing without hardware, skip to [Mock Mode](#step-5---mock-mode-optional).
+The runtime is intended for a single UFactory xArm or a bimanual xArm setup. If you are testing without hardware, skip to [Mock Mode](#mock-mode-optional).
 
 Configure robot IPs and end effectors in `configs/robot_mapping.json`. The current layout uses:
 
@@ -63,7 +63,7 @@ Mount the Intel RealSense camera on the xArm camera plate for the arm marked wit
 
 For ZWHAND DM17 setup, scanning, calibration, and replay details, see `docs/zwhand.md`.
 
-## Step 2 - Calibration
+## Calibration
 
 Calibrate vision before running vision-guided protocols. The normal order is:
 
@@ -74,7 +74,7 @@ Calibrate vision before running vision-guided protocols. The normal order is:
 5. Confirm runtime config points to the generated calibration files.
 The full calibration guide is in `docs/calibration.md`
 
-## Step 3 - Protocols: Record And Run
+## Protocols: Record And Run
 
 Protocols live in `protocols/` as YAML files. They are built from declarative steps such as recorded `go_to` movements, end-effector commands, sleeps, sub-protocol calls, `parallel` blocks, and `repeat` loops. Recorded robot poses live in `locations/`.
 
@@ -95,7 +95,7 @@ Vision-guided steps such as `move_to_object`, `wait_until_visible`, `handoff`, a
 
 For the full recording workflow, location format, YAML step reference, and protocol examples, see `docs/protocols.md`.
 
-## Step 4 - Run The MCP Server
+## Run The MCP Server
 
 The MCP server connects this runtime to LabOS over WebSocket. Once connected, a LabOS agent can call tools such as `get_protocols`, `describe_protocol`, `start_protocol`, `stop_robot`, `get_status`, `move_to_object`, and other robot or vision helpers.
 
@@ -126,9 +126,9 @@ The server fails fast if `LABOS_URL` or `LABOS_API_KEY` are missing from `.env` 
 
 For the full MCP architecture, tool surface, progress events, fatal error flow, and agent usage examples, see `docs/mcp.md`.
 
-## Step 5 - Mock Mode Optional
+## Mock Mode Optional
 
-Mock mode is useful for install checks, agent integration tests, demos, and development without a robot or camera. However, this still requires defining a valid API key and url as in Step 4.
+Mock mode is useful for install checks, agent integration tests, demos, and development without a robot or camera. However, this still requires defining a valid API key and url as described in [Run The MCP Server](#run-the-mcp-server).
 
 Run:
 
