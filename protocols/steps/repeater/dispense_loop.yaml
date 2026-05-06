@@ -1,0 +1,41 @@
+args:
+  tube_count: 5
+  tube_spacing: -40
+  start_offset: [0, 0, 0]
+
+protocol:
+  - step: repeat
+    description: "Repeat nested steps {{tube_count}} times"
+    count: "{{tube_count}}"
+    var: i
+    offset_step: [0, "{{tube_spacing}}", 0]
+    offset_var: tube_offset
+    protocol:
+      - step: go_to
+        description: "Move left arm to repeater first tube"
+        location: repeater_first_tube
+        arm: left
+        offset: "{{tube_offset}}"
+      - step: move
+        description: "Move relative to current pose"
+        arm: left
+        frame: base
+        relative: "{{start_offset}}"
+      - step: hand_position
+        description: "Set dexterous hand pose to up/holding"
+        location: hand/repeater-grip
+        arm: left
+      - step: sleep
+        description: "Wait before continuing"
+        seconds: 0.25
+      - step: hand_position
+        description: "Set dexterous hand pose down to dispense"
+        location: hand/repeater-down
+        arm: left
+      - step: sleep
+        description: "Wait before continuing"
+        seconds: 0.25
+      - step: hand_position
+        description: "Set dexterous hand pose back to grip"
+        location: hand/repeater-grip
+        arm: left

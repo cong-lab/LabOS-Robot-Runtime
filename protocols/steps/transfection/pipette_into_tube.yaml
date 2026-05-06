@@ -1,0 +1,55 @@
+protocol:
+  - step: go_to
+    description: "Move right arm pipette above source tube"
+    arm: right
+    location: tf_pit_1
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Position left arm above pipette plunger"
+    arm: left
+    location: tf_pit_push_1
+  - step: z_level
+    description: "Move left arm down to Z level 263.5"
+    arm: left
+    height: 263.5
+  - step: z_level
+    description: "Move left arm down to Z level 258.5"
+    arm: left
+    height: 258.5
+  - step: parallel
+    description: Lower pipette and plunger together
+    branches:
+      - arm: right
+        protocol:
+          - step: z_level
+            description: "Move right arm down to Z level 235"
+            height: 235
+      - arm: left
+        protocol:
+          - step: z_level
+            description: "Move left arm down to Z level 215"
+            height: 215
+  - step: sleep
+    description: "Wait 0.5 seconds"
+    seconds: 0.5
+  - step: z_level
+    description: "Move left arm down to Z level 219.9"
+    arm: left
+    height: 219.9
+    speed: 10
+    acc: 10
+  - step: go_to
+    description: "Position left arm above pipette plunger"
+    arm: left
+    location: tf_pit_push_1
+  - step: go_to
+    description: "Pull plunger arm away from pipette"
+    arm: left
+    location: tf_pit_3
+  - step: z_level
+    description: "Move right arm up to Z level 501"
+    arm: right
+    height: 501

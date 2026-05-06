@@ -1,0 +1,23 @@
+args:
+  open_grip: 650
+  closed_grip: 250
+
+protocol:
+  - step: go_to
+    description: "Approach repeater pipette on rack"
+    location: repeater_right_approach
+  - step: grip
+    description: "Set gripper position"
+    state: "{{open_grip}}"
+  - step: go_to
+    description: "Grip repeater pipette"
+    location: repeater_grab
+  - step: grip
+    description: "Set gripper position"
+    state: "{{closed_grip}}"
+  - step: go_to
+    description: "Lift repeater pipette from holder"
+    location: repeater_right_lift
+  - step: go_to
+    description: "Clear repeater pipette from rack"
+    location: repeater_right_lift_out

@@ -1,0 +1,104 @@
+brief: "Transfection workflow: prepare tube, remove dish covers, pipette into dishes, and clean up."
+
+args:
+  max_tcp_speed: 400
+  max_tcp_acc: 800
+  max_tcp_jerk: 1300
+  max_joint_speed: 60
+  max_joint_acc: 800
+  max_joint_jerk: 1300
+  dish_spacing: 90
+
+protocol:
+  - step: set_tcp_limits
+    description: "Configure TCP motion limits"
+    arm: right
+    max_speed: "{{max_tcp_speed}}"
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+  - step: set_joint_limits
+    description: "Configure joint motion limits"
+    arm: right
+    max_speed: "{{max_joint_speed}}"
+    max_acc: "{{max_joint_acc}}"
+    jerk: "{{max_joint_jerk}}"
+  - step: set_tcp_limits
+    description: "Configure TCP motion limits"
+    arm: left
+    max_speed: "{{max_tcp_speed}}"
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+  - step: set_joint_limits
+    description: "Configure joint motion limits"
+    arm: left
+    max_speed: "{{max_joint_speed}}"
+    max_acc: "{{max_joint_acc}}"
+    jerk: "{{max_joint_jerk}}"
+  - step: go_to
+    description: "Move left arm to tf left home"
+    location: tf_left_home
+    arm: left
+  - step: go_to
+    description: "Move right arm to tf home"
+    location: tf_home
+    arm: right
+  - step: run
+    file: steps/transfection/turn_incubator_off.yaml
+    description: Turn incubator off
+  - step: run
+    file: steps/transfection/get_tube.yaml
+    description: Get 1.5ml eppendorf tube
+  - step: run
+    file: steps/transfection/open_tube.yaml
+    description: Open tube
+  - step: run
+    file: steps/transfection/place_tube.yaml
+    description: Place open tube
+  - step: parallel
+    description: Remove dish covers and initialize pipette
+    branches:
+      - arm: left
+        description: Remove covers
+        protocol:
+          - step: run
+            description: "Remove dish covers"
+            file: steps/transfection/remove_covers.yaml
+      - arm: right
+        description: Initialize pipette
+        protocol:
+          - step: run
+            description: "Initialize pipette and attach tip"
+            file: steps/transfection/initialize_pipette.yaml
+  - step: run
+    file: steps/transfection/pipette_into_tube.yaml
+    description: Aspirate liquid from tube
+  - step: run
+    file: steps/transfection/pipette_to_dishes.yaml
+    description: Dispense liquid across dishes
+  - step: run
+    file: steps/transfection/dispense_tip.yaml
+    description: Dispense used tip
+  - step: run
+    file: steps/transfection/place_pipette_back.yaml
+    description: Return pipette
+  - step: run
+    file: steps/transfection/replace_covers.yaml
+    description: Replace dish covers
+
+failure:
+  - step: grip
+    description: "Open right arm gripper to 700"
+    arm: right
+    state: 700
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: go_to
+    description: "Send right arm home"
+    location: tf_home
+    arm: right
+  - step: go_to
+    description: "Send left arm home"
+    location: tf_left_home
+    arm: left

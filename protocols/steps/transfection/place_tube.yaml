@@ -1,0 +1,25 @@
+protocol:
+  - step: go_to
+    description: "Move left arm tube to the holder"
+    arm: left
+    location: tf_left_1.5_place_1
+  - step: z_level
+    description: "Move left arm down to Z level -72.3"
+    arm: left
+    height: -72.3
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: grip
+    description: "Open left arm gripper to 350"
+    arm: left
+    state: 350
+  - step: z_level
+    description: "Move left arm up to Z level 60"
+    arm: left
+    height: 60
+  - step: go_to
+    description: "Clear the tube holder"
+    arm: left
+    location: tf_left_1.5_place_2

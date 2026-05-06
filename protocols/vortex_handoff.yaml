@@ -1,0 +1,82 @@
+# Vortexing protocol variant: receive a hand-held tube, vortex it, place it into the rack.
+# Run with: python run_protocol.py vortex_handoff
+
+brief: "Receive a 50ml eppendorf tube by handoff, vortex it, and place it into the rack."
+
+args:
+  hand_off: true
+  handoff_object: orange cap
+  handoff_object_classes:
+    - orange circle
+    - orange cap
+    - 50ml orange cap centrifuge tube
+  handoff_yolo_classes:
+    - orange circle
+    - orange cap
+    - hand
+    - person
+  handoff_hand_class: hand
+  handoff_desired_position: [581, 656]
+  handoff_desired_area: 16000
+  handoff_area_tolerance: 2000
+  handoff_camera_device: 2
+  handoff_model: yoloe-11l-seg.pt
+  handoff_confidence: 0.03
+  handoff_grip_state: 200
+
+protocol:
+  - step: start_vision
+    description: Start camera + vision display
+
+  - step: go_to
+    location: home
+    description: Start at home
+
+  - step: go_to
+    location: rack_watch
+    description: Move to the handoff watch position
+
+  - step: run
+    file: steps/handoff/handoff.yaml
+    description: Receive tube from handoff
+    major_description: Align to the hand-held tube with YOLOE velocity control and grip it.
+    args:
+      handoff_object: "{{handoff_object}}"
+      handoff_object_classes: "{{handoff_object_classes}}"
+      handoff_yolo_classes: "{{handoff_yolo_classes}}"
+      handoff_hand_class: "{{handoff_hand_class}}"
+      handoff_desired_position: "{{handoff_desired_position}}"
+      handoff_desired_area: "{{handoff_desired_area}}"
+      handoff_area_tolerance: "{{handoff_area_tolerance}}"
+      handoff_camera_device: "{{handoff_camera_device}}"
+      handoff_model: "{{handoff_model}}"
+      handoff_confidence: "{{handoff_confidence}}"
+      handoff_grip_state: "{{handoff_grip_state}}"
+
+  - step: go_to
+    location: vortex_watch
+    description: Move to vortex watch position
+
+  - step: run
+    file: steps/vortex/vortex_tube.yaml
+    description: Vortex tube
+    major_description: Vortex the tube in the vortex genie 2.
+    args:
+      tube_object: "50ml eppendorf"
+
+  - step: go_to
+    location: rack_watch
+    description: Move to rack watch position
+
+  - step: run
+    file: steps/rack/place_into_rack.yaml
+    description: Place tube into rack
+    major_description: Places the tube into the rack after handoff vortexing.
+    args:
+      object: "rack hole"
+
+failure:
+  - step: grip
+    state: 600
+  - step: stop
+    description: Vortex handoff protocol failed

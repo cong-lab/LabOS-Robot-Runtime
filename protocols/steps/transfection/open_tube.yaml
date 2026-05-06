@@ -1,0 +1,57 @@
+protocol:
+  - step: go_to
+    description: "Send right arm home"
+    arm: right
+    location: tf_home
+  - step: go_to
+    description: "Hold the 1.5ml eppendorf tube for opening"
+    arm: left
+    location: tf_left_1.5_open_1
+  - step: grip
+    description: "Open right arm gripper to 450"
+    arm: right
+    state: 450
+  - step: go_to
+    description: "Approach the 1.5ml eppendorf tube cap"
+    arm: right
+    location: tf_right_1.5_open_1
+  - step: go_to
+    description: "Grip the 1.5ml eppendorf tube cap"
+    arm: right
+    location: tf_right_1.5_open_2
+  - step: grip
+    description: "Close right arm gripper to 50"
+    arm: right
+    state: 50
+  - step: grip
+    description: "Close left arm gripper to 135"
+    arm: left
+    state: 135
+  - step: move
+    description: "Move left arm relative in tool frame ([0, 0, -6, 18, 0, 0])"
+    arm: left
+    relative: [0, 0, -6, 18, 0, 0]
+  - step: grip
+    description: "Open left arm gripper to 350"
+    arm: left
+    state: 350
+  - step: move
+    description: "Move left arm relative in tool frame ([0, 0, 6, -18, 0, 0])"
+    arm: left
+    relative: [0, 0, 6, -18, 0, 0]
+  - step: grip
+    description: "Close left arm gripper to 130"
+    arm: left
+    state: 130
+  - step: grip
+    description: "Open right arm gripper to 450"
+    arm: right
+    state: 450
+  - step: go_to
+    description: "Pull cap away from the tube"
+    arm: right
+    location: tf_right_1.5_open_3
+  - step: go_to
+    description: "Clear the cap from the work area"
+    arm: right
+    location: tf_right_1.5_open_4

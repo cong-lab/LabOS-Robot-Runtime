@@ -1,0 +1,25 @@
+protocol:
+  - step: go_to
+    description: "Approach the 1.5ml eppendorf tube pickup area"
+    arm: left
+    location: tf_left_1.5_pickup_1
+  - step: go_to
+    description: "Move left arm over the selected 1.5ml eppendorf tube"
+    arm: left
+    location: tf_left_1.5_pickup_2
+  - step: grip
+    description: "Open left arm gripper to 400"
+    arm: left
+    state: 400
+  - step: z_level
+    description: "Move left arm down to Z level 88"
+    arm: left
+    height: 88
+  - step: grip
+    description: "Close left arm gripper to 140"
+    arm: left
+    state: 140
+  - step: z_level
+    description: "Move left arm up to Z level 180"
+    arm: left
+    height: 180

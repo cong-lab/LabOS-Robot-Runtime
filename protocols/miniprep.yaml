@@ -1,0 +1,101 @@
+# Miniprep protocol: pick tubes from the right rack, vortex, place into the left rack.
+# Run with: python run_protocol.py miniprep
+#
+# Flow:
+#   1. Turn on the vortexer (left arm presses switch).
+#   2. Loop over rack positions: pick tube, vortex, place.
+#      - stop_on_not_found ends the loop gracefully when no more tubes are detected.
+#   3. Send right arm to miniprep_home.
+#   4. Turn off the vortexer (left arm presses off-switch).
+#
+# The failure block mirrors the cleanup so an unexpected error still
+# sends the right arm home and turns off the vortexer.
+
+brief: "Pick 14ml tubes from right rack, vortex each, place into left rack."
+
+args:
+  num_vials: 20
+  vortex_time: 2
+  travel_speed: 1350
+  travel_acc: 1560
+  fine_speed: 400
+  fine_acc: 500
+  max_tcp_acc: 900
+  max_tcp_jerk: 4000
+
+protocol:
+  # --- startup ---
+  - step: start_vision
+    description: Start camera + vision display
+
+  - step: set_tcp_limits
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+    description: Configure firmware TCP acceleration / jerk limits
+
+  # --- main loop ---
+  - step: repeat
+    count: "{{num_vials}}"
+    var: i
+    offsets:
+      right_offset:
+        step: [40, 0, 0]
+        y_step: [0, 60, 0]
+        columns: 3
+      left_offset:
+        step: [25, 0, 0]
+        y_step: [0, 25, 0]
+        columns: 3
+    description: Process vials
+
+    protocol:
+      - step: run
+        file: steps/miniprep/right_rack_pickup.yaml
+        description: Pick tube from right rack
+        args:
+          loop_offset: "{{right_offset}}"
+          travel_speed: "{{travel_speed}}"
+          travel_acc: "{{travel_acc}}"
+          fine_speed: "{{fine_speed}}"
+          fine_acc: "{{fine_acc}}"
+
+      - step: run
+        file: steps/miniprep/vortex.yaml
+        description: Vortex tube
+        args:
+          vortex_time: "{{vortex_time}}"
+          travel_speed: "{{travel_speed}}"
+          travel_acc: "{{travel_acc}}"
+
+      - step: run
+        file: steps/miniprep/left_rack_place.yaml
+        description: Place tube into left rack
+        args:
+          loop_offset: "{{left_offset}}"
+          travel_speed: "{{travel_speed}}"
+          travel_acc: "{{travel_acc}}"
+          fine_speed: "{{fine_speed}}"
+          fine_acc: "{{fine_acc}}"
+      
+      # - step: go_to
+      #   location: miniprep_clear
+      #   speed: "{{travel_speed}}"
+      #   acc: "{{travel_acc}}"
+      #   offset: [0, 0, 0]
+      #   description: Move to clear position
+
+  # --- cleanup (runs after loop finishes or ObjectNotFoundError breaks it) ---
+  - step: go_to
+    location: miniprep_home
+    arm: right
+    description: Send right arm to home position
+
+failure:
+  - step: grip
+    state: 600
+    arm: right
+  - step: go_to
+    location: miniprep_home
+    arm: right
+  - step: run
+    file: steps/miniprep/turn_off_vortexer.yaml

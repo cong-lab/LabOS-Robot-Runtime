@@ -1,0 +1,107 @@
+protocol:
+  - step: go_to
+    description: "Move left arm above dish cover pickup position"
+    arm: left
+    location: tf_dish_cover_1
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: go_to
+    description: "Move left arm above dish cover pickup position"
+    arm: left
+    location: tf_dish_cover_1
+    offset: [0, 0, 0]
+  - step: z_level
+    description: "Move left arm down to Z level -83"
+    arm: left
+    height: -83
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: z_level
+    description: "Move left arm up to Z level 24.5"
+    arm: left
+    height: 24.5
+  - step: go_to
+    description: "Move left arm dish cover to staging position"
+    arm: left
+    location: tf_dish_cover_2
+    offset: [0, 0, 0]
+  - step: z_level
+    description: "Move left arm down to Z level -96"
+    arm: left
+    height: -96
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: go_to
+    description: "Move left arm above dish cover pickup position"
+    arm: left
+    location: tf_dish_cover_1
+    offset: [0, -100, 0]
+  - step: z_level
+    description: "Move left arm down to Z level -83"
+    arm: left
+    height: -83
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: z_level
+    description: "Move left arm up to Z level 24.5"
+    arm: left
+    height: 24.5
+  - step: go_to
+    description: "Move left arm dish cover to staging position"
+    arm: left
+    location: tf_dish_cover_2
+    offset: [0, -100, 0]
+  - step: z_level
+    description: "Move left arm down to Z level -96"
+    arm: left
+    height: -96
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: go_to
+    description: "Move left arm above dish cover pickup position"
+    arm: left
+    location: tf_dish_cover_1
+    offset: [0, -200, 0]
+  - step: z_level
+    description: "Move left arm down to Z level -83"
+    arm: left
+    height: -83
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: z_level
+    description: "Move left arm up to Z level 24.5"
+    arm: left
+    height: 24.5
+  - step: go_to
+    description: "Move left arm dish cover to staging position"
+    arm: left
+    location: tf_dish_cover_2
+    offset: [0, -200, 0]
+  - step: z_level
+    description: "Move left arm down to Z level -96"
+    arm: left
+    height: -96
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: z_level
+    description: "Move left arm up to Z level -15"
+    arm: left
+    height: -15
+  - step: go_to
+    description: "Move left arm to dish cover staging area"
+    arm: left
+    location: tf_dish_cover_3

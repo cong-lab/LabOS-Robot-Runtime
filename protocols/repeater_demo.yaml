@@ -1,0 +1,152 @@
+# Repeater pipette demo: load liquid from source tube, dispense across destination tubes.
+#
+# Run with: python run_protocol.py repeater_demo
+#
+# Flow:
+#   1. Configure TCP limits and set left hand grip.
+#   2. Both arms go home, then over tube (parallel — bimanual locations).
+#   3. Left arm enters tube first, then right arm grips lift tab and draws liquid.
+#   4. Both arms retract (parallel).
+#   5. Loop: left arm dispenses into each destination tube.
+#   6. Both arms return home (parallel).
+
+brief: "Repeater pipette demo: load liquid, dispense across tubes."
+
+args:
+  max_tcp_acc: 700
+  max_tcp_jerk: 1200
+  tube_count: 10
+  tube_spacing: -20
+
+protocol:
+  # --- setup ---
+  - step: set_tcp_limits
+    arm: right
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+    description: Configure right arm TCP limits
+
+  - step: set_tcp_limits
+    arm: left
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+    description: Configure left arm TCP limits
+
+  - step: hand_position
+    location: hand/repeater-grip
+    arm: left
+    description: Set left hand to repeater grip
+
+  # --- both arms to home (parallel, bimanual location) ---
+  - step: go_to
+    location: repeater_home
+    offset: [0, 0, 0]
+    description: Both arms to home
+
+  # --- both arms over tube (parallel, bimanual location) ---
+  - step: go_to
+    location: repeater_over_tube
+    description: Both arms over tube
+
+  # --- left arm enters tube first ---
+  - step: go_to
+    location: repeater_into_tube
+    arm: left
+    offset: [0, 0, 0]
+    description: Left arm into tube
+
+  # --- right arm grips lift tab ---
+  - step: grip
+    state: 380
+    arm: right
+    description: Open right gripper
+
+  - step: go_to
+    location: repeater_into_tube
+    arm: right
+    offset: [0, 0, 0]
+    description: Right arm into tube
+
+  - step: grip
+    state: 80
+    arm: right
+    description: Close right gripper on lift tab
+
+  # --- right arm draws liquid ---
+  - step: go_to
+    location: repeater_right_arm_lift
+    arm: right
+    offset: [0, 0, 0]
+    description: Right arm lift to draw liquid
+
+  - step: grip
+    state: 190
+    arm: right
+    description: Set right gripper for draw
+
+  - step: go_to
+    location: repeater_right_pullback
+    arm: right
+    offset: [0, 0, 0]
+    description: Right arm pullback
+
+  # --- retract: left clears tube, right goes home (sequential — different locations) ---
+  - step: go_to
+    location: repeater_over_tube
+    arm: left
+    offset: [0, 0, 0]
+    description: Left arm clear of tube
+
+  - step: go_to
+    location: repeater_home
+    arm: right
+    description: Right arm to home
+
+  # --- dispense loop (left arm only) ---
+  - step: repeat
+    count: "{{tube_count}}"
+    var: i
+    offset_step: [0, "{{tube_spacing}}", 0]
+    offset_var: tube_offset
+    description: Dispense into tubes
+
+    protocol:
+      - step: go_to
+        location: repeater_first_tube
+        arm: left
+        offset: "{{tube_offset}}"
+        description: Move to tube
+
+      - step: hand_position
+        location: hand/repeater-grip
+        arm: left
+        description: Grip position
+
+      - step: sleep
+        seconds: 0.25
+
+      - step: hand_position
+        location: hand/repeater-down
+        arm: left
+        description: Push down to dispense
+
+      - step: sleep
+        seconds: 0.25
+
+      - step: hand_position
+        location: hand/repeater-grip
+        arm: left
+        description: Return to grip position
+
+  # --- both arms home (parallel, bimanual location) ---
+  - step: go_to
+    location: repeater_home
+    description: Both arms to home
+
+failure:
+  - step: go_to
+    location: repeater_home
+    arm: right
+  - step: go_to
+    location: repeater_home
+    arm: left

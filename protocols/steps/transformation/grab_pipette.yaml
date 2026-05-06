@@ -1,0 +1,12 @@
+args:
+  which_one: left
+  let_go: false
+
+protocol:
+  - step: python_call
+    description: "Run helper transformation.grab_pipette"
+    module: transformation
+    function: grab_pipette
+    args:
+      which_one: "{{which_one}}"
+      let_go: "{{let_go}}"

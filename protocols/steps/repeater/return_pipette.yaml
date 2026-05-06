@@ -1,0 +1,84 @@
+protocol:
+  - step: parallel
+    description: "Run independent arm sequences in parallel"
+    branches:
+      - arm: right
+        protocol:
+          - step: go_to
+            description: "Move to repeater home pose"
+            location: repeater_home
+      - arm: left
+        protocol:
+          - step: go_to
+            description: "Move to repeater home pose"
+            location: repeater_home
+  - step: go_to
+    description: "Bring arms together for repeater return"
+    location: repeater_coming_together
+    arm: right
+  - step: go_to
+    description: "Bring arms together for repeater return"
+    location: repeater_coming_together
+    arm: left
+  - step: grip
+    description: "Open right arm gripper to 700"
+    state: 700
+    arm: right
+  - step: go_to
+    description: "Grip repeater for return handoff"
+    location: repeater_coming_together_close
+    arm: right
+  - step: grip
+    description: "Close right arm gripper to 250"
+    state: 250
+    arm: right
+  - step: hand_position
+    description: "Set left arm hand to hand/fully-open"
+    location: hand/fully-open
+    arm: left
+  - step: go_to
+    description: "Release repeater from left hand"
+    location: repeater_left_release_repeater
+    arm: left
+    speed: 150
+    acc: 200
+  - step: go_to
+    description: "Move left hand away from repeater"
+    location: repeater_left_release_repeater_two
+    arm: left
+    speed: 175
+    acc: 200
+  - step: go_to
+    description: "Clear left hand from return path"
+    location: repeater_left_release_repeater_three
+    arm: left
+    speed: 200
+    acc: 200
+  - step: go_to
+    description: "Prepare right arm to return repeater"
+    location: repeater_right_prep_place_back
+    arm: right
+  - step: go_to
+    description: "Align repeater with rack return path"
+    location: repeater_right_prep_place_back_two
+    arm: right
+    speed: 150
+    acc: 200
+  - step: go_to
+    description: "Place repeater back into rack"
+    location: repeater_right_place_back_three
+    arm: right
+    speed: 150
+    acc: 200
+  - step: grip
+    description: "Open right arm gripper to 600"
+    state: 600
+    arm: right
+  - step: go_to
+    description: "Pull back after returning repeater"
+    location: repeater_right_place_pullback
+    arm: right
+  - step: go_to
+    description: "Move left arm to repeater home pose"
+    location: repeater_home
+    arm: left

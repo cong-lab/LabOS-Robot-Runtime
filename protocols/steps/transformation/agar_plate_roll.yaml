@@ -1,0 +1,151 @@
+protocol:
+  - step: go_to
+    description: "Move left arm back toward staged agar lid"
+    arm: left
+    location: trans_agar_lid_prep_place_pullaway
+  - step: go_to
+    description: "Move left arm agar lid to staging location"
+    arm: left
+    location: trans_agar_lid_prep_place
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: go_to
+    description: "Lower agar lid onto staging location"
+    arm: left
+    location: trans_agar_lid_prep_place_down
+  - step: z_level
+    description: "Move left arm down to Z level -95.6"
+    arm: left
+    height: -95.6
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Lower agar lid onto staging location"
+    arm: left
+    location: trans_agar_lid_prep_place_down
+  - step: go_to
+    description: "Move left arm agar lid to staging location"
+    arm: left
+    location: trans_agar_lid_prep_place
+  - step: go_to
+    description: "Move left arm back toward staged agar lid"
+    arm: left
+    location: trans_agar_lid_prep_place_pullaway
+  - step: go_to
+    description: "Approach agar plate lid"
+    arm: left
+    location: trans_agar_lid_prep
+  - step: z_level
+    description: "Move left arm down to Z level -78.4"
+    arm: left
+    height: -78.4
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: z_level
+    description: "Move left arm down to Z level -90"
+    arm: left
+    height: -90
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Slide gripper to side of agar plate"
+    arm: left
+    location: trans_left_agar_plate_slide_side
+    speed: 150
+    acc: 200
+  - step: grip
+    description: "Close left arm gripper to 270"
+    arm: left
+    state: 270
+  - step: z_level
+    description: "Move left arm up to Z level -24"
+    arm: left
+    height: -24
+  - step: go_to
+    description: "Grip side of agar plate"
+    arm: left
+    location: trans_left_agar_plate_side_pickup
+  - step: grip
+    description: "Open left arm gripper to 600"
+    arm: left
+    state: 600
+  - step: go_to
+    description: "Secure agar plate side grip"
+    arm: left
+    location: trans_left_agar_plate_side_pickup_2
+    speed: 150
+    acc: 200
+  - step: grip
+    description: "Close left arm gripper to 115"
+    arm: left
+    state: 115
+  - step: go_to
+    description: "Lift agar plate for rolling"
+    arm: left
+    location: trans_left_agar_plate_side_pickup_3
+    speed: 150
+    acc: 200
+  - step: go_to
+    description: "Hold agar plate at rolling pose"
+    arm: left
+    location: trans_left_agar_plate_side_pickup_4
+    speed: 150
+    acc: 200
+  - step: repeat
+    description: "Repeat nested steps 30 times"
+    count: 30
+    protocol:
+      - step: random_choice
+        description: "Choose a random option"
+        var: roll_suffix
+        choices: ['', '_1', '_2', '_3', '_4', '_5', '_6']
+      - step: go_to
+        description: "Move left arm to trans left agar plate roll{{roll suffix}}"
+        arm: left
+        location: "trans_left_agar_plate_roll{{roll_suffix}}"
+  - step: go_to
+    description: "Hold agar plate at rolling pose"
+    arm: left
+    location: trans_left_agar_plate_side_pickup_4
+  - step: go_to
+    description: "Lift agar plate for rolling"
+    arm: left
+    location: trans_left_agar_plate_side_pickup_3
+  - step: go_to
+    description: "Place agar plate back down"
+    arm: left
+    location: trans_left_agar_plate_place_down
+    speed: 150
+    acc: 200
+  - step: grip
+    description: "Open left arm gripper to 350"
+    arm: left
+    state: 350
+  - step: go_to
+    description: "Back away after placing agar plate"
+    arm: left
+    location: trans_left_agar_plate_place_down_backoff
+    speed: 150
+    acc: 200
+  - step: go_to
+    description: "Clear agar plate after rolling"
+    arm: left
+    location: trans_left_agar_plate_place_down_2
+    speed: 150
+    acc: 200
+  - step: z_level
+    description: "Move left arm up to Z level 230"
+    arm: left
+    height: 230
+  - step: go_to
+    description: "Move left arm to transformation home pose"
+    arm: left
+    location: trans_home

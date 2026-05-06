@@ -1,0 +1,47 @@
+protocol:
+  - step: go_to
+    description: "Prepare left hand to receive repeater"
+    location: repeater_left_prep_for_grab
+    arm: left
+  - step: go_to
+    description: "Place repeater into left fingers"
+    location: repeater_left_place_in_fingers
+    arm: left
+    speed: 150
+    acc: 200
+  - step: hand_position
+    description: "Set left arm hand to hand/repeater-prep-grasp"
+    location: hand/repeater-prep-grasp
+    arm: left
+  - step: go_to
+    description: "Seat repeater deeper into left hand"
+    location: repeater_left_place_in_fingers_two
+    arm: left
+    speed: 150
+    acc: 200
+  - step: go_to
+    description: "Finalize repeater handoff alignment"
+    location: repeater_left_place_in_fingers_three
+    arm: left
+    speed: 100
+    acc: 200
+  - step: hand_position
+    description: "Set left arm hand to hand/repeater-prep-grasp-two"
+    location: hand/repeater-prep-grasp-two
+    arm: left
+  - step: grip
+    description: "Open right arm gripper to 600"
+    state: 600
+    arm: right
+  - step: hand_position
+    description: "Set left arm hand to hand/repeater-grip"
+    location: hand/repeater-grip
+    arm: left
+  - step: go_to
+    description: "Back right arm away after handoff"
+    location: repeater_right_release_back
+    arm: right
+  - step: go_to
+    description: "Move left arm to repeater home pose"
+    location: repeater_home
+    arm: left

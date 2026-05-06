@@ -1,0 +1,140 @@
+args:
+  fix_offset: [3.5, 3.5, 0]
+  fix_offset_down: [3.5, 3.5, -4]
+
+protocol:
+  - step: z_level
+    description: "Move right arm down to Z level 198"
+    arm: right
+    height: 198
+  - step: z_level
+    description: "Move right arm up to Z level 360"
+    arm: right
+    height: 360
+  - step: go_to
+    description: "Move left arm to pipetting preparation pose"
+    arm: left
+    location: trans_pipette_prep
+  - step: go_to
+    description: "Move right arm to pipetting preparation pose"
+    arm: right
+    location: trans_pipette_prep
+  - step: go_to
+    description: "Align pipette with target tube"
+    arm: right
+    location: trans_pipette_prep_2
+    offset: "{{fix_offset}}"
+  - step: go_to
+    description: "Lower pipette toward target tube"
+    arm: right
+    location: trans_pipette_prep_3
+    offset: "{{fix_offset}}"
+  - step: go_to
+    description: "Insert pipette tip into tube"
+    arm: right
+    location: trans_pipette_in
+    offset: "{{fix_offset}}"
+  - step: grip
+    description: "Close right arm gripper to 0"
+    arm: right
+    state: 0
+  - step: grip
+    description: "Open left arm gripper to 700"
+    arm: left
+    state: 700
+  - step: go_to
+    description: "Position left arm above pipette plunger"
+    arm: left
+    location: trans_left_pipette_prep
+    offset: "{{fix_offset}}"
+  - step: go_to
+    description: "Press pipette plunger to first stop"
+    arm: left
+    location: trans_left_pipette_first_stop
+    offset: "{{fix_offset_down}}"
+  - step: go_to
+    description: "Position left arm above pipette plunger"
+    arm: left
+    location: trans_left_pipette_prep
+    offset: "{{fix_offset}}"
+  - step: go_to
+    description: "Move left arm to pipetting preparation pose"
+    arm: left
+    location: trans_pipette_prep
+    offset: "{{fix_offset}}"
+  - step: z_level
+    description: "Move right arm up to Z level 475"
+    arm: right
+    height: 475
+  - step: go_to
+    description: "Raise pipette above tube"
+    arm: right
+    location: trans_right_pipette_over
+    offset: "{{fix_offset}}"
+  - step: z_level
+    description: "Move right arm down to Z level 376"
+    arm: right
+    height: 376
+  - step: go_to
+    description: "Prepare for second plunger press"
+    arm: left
+    location: trans_left_pipette_2_prep
+    offset: "{{fix_offset}}"
+  - step: z_level
+    description: "Move left arm down to Z level 345"
+    arm: left
+    height: 345
+  - step: z_level
+    description: "Move left arm up to Z level 385"
+    arm: left
+    height: 385
+  - step: go_to
+    description: "Move left arm to pipetting preparation pose"
+    arm: left
+    location: trans_pipette_prep
+  - step: z_level
+    description: "Move right arm up to Z level 446"
+    arm: right
+    height: 446
+  - step: go_to
+    description: "Move right arm pipette to dispense position"
+    arm: right
+    location: trans_right_pipette_2_disp_prep
+  - step: z_level
+    description: "Move right arm down to Z level 284.4"
+    arm: right
+    height: 284.4
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Move left arm to dispense plunger position"
+    arm: left
+    location: trans_left_pipette_2_disp_prep
+  - step: z_level
+    description: "Move left arm down to Z level 230.8"
+    arm: left
+    height: 230.8
+  - step: z_level
+    description: "Move left arm up to Z level 340"
+    arm: left
+    height: 340
+  - step: z_level
+    description: "Move right arm up to Z level 322"
+    arm: right
+    height: 322
+  - step: go_to
+    description: "Move left arm to transformation home pose"
+    arm: left
+    location: trans_home
+  - step: go_to
+    description: "Raise pipette above tube"
+    arm: right
+    location: trans_right_pipette_over
+    offset: [-100, -250, 0]
+  - step: run
+    description: "Run place pipette sub-protocol"
+    file: place_pipette.yaml
+    args:
+      which_one: left

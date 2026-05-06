@@ -1,0 +1,121 @@
+protocol:
+  - step: go_to
+    description: "Move left arm clear for buffer tube work"
+    arm: left
+    location: trans_left_buffer_prep_backoff
+  - step: go_to
+    description: "Approach buffer tube with right arm"
+    arm: right
+    location: trans_right_buffer_prep
+  - step: grip
+    description: "Open left arm gripper to 600"
+    arm: left
+    state: 600
+  - step: z_level
+    description: "Move right arm down to Z level 115.9"
+    arm: right
+    height: 115.9
+  - step: grip
+    description: "Close right arm gripper to 100"
+    arm: right
+    state: 100
+  - step: z_level
+    description: "Move right arm up to Z level 311"
+    arm: right
+    height: 311
+  - step: go_to
+    description: "Move right arm buffer tube to handoff position"
+    arm: right
+    location: trans_right_buffer_handoff
+  - step: go_to
+    description: "Move left arm buffer tube to handoff position"
+    arm: left
+    location: trans_right_buffer_handoff
+  - step: go_to
+    description: "Grip buffer tube for cap removal"
+    arm: left
+    location: trans_left_buffer_handoff_2
+  - step: grip
+    description: "Close left arm gripper to 150"
+    arm: left
+    state: 150
+  - step: grip
+    description: "Close right arm gripper to 275"
+    arm: right
+    state: 275
+  - step: go_to
+    description: "Twist buffer tube cap loose"
+    arm: right
+    location: trans_right_buffer_screw
+  - step: go_to
+    description: "Continue removing buffer tube cap"
+    arm: right
+    location: trans_right_buffer_screw_2
+  - step: z_level
+    description: "Move right arm up to Z level 510"
+    arm: right
+    height: 510
+  - step: go_to
+    description: "Pull open buffer tube away from cap"
+    arm: left
+    location: trans_left_buffer_pull_away
+  - step: go_to
+    description: "Place buffer tube cap on table"
+    arm: right
+    location: trans_right_buffer_cap_put_down
+  - step: z_level
+    description: "Move right arm down to Z level 2.8"
+    arm: right
+    height: 2.8
+  - step: grip
+    description: "Open right arm gripper to 350"
+    arm: right
+    state: 350
+  - step: grip
+    description: "Close right arm gripper to 160"
+    arm: right
+    state: 160
+  - step: grip
+    description: "Open right arm gripper to 800"
+    arm: right
+    state: 800
+  - step: z_level
+    description: "Move right arm up to Z level 441"
+    arm: right
+    height: 441
+  - step: go_to
+    description: "Exchange buffer tube between arms"
+    arm: left
+    location: trans_buffer_exchange
+  - step: go_to
+    description: "Exchange buffer tube between arms"
+    arm: right
+    location: trans_buffer_exchange
+  - step: grip
+    description: "Close right arm gripper to 155"
+    arm: right
+    state: 155
+  - step: grip
+    description: "Open left arm gripper to 650"
+    arm: left
+    state: 650
+  - step: go_to
+    description: "Place buffer tube down after exchange"
+    arm: left
+    location: trans_buffer_exchange_2
+  - step: go_to
+    description: "Place buffer tube down after exchange"
+    arm: right
+    location: trans_buffer_exchange_2
+  - step: z_level
+    description: "Move right arm down to Z level 107"
+    arm: right
+    height: 107
+  - step: grip
+    description: "Open right arm gripper to 600"
+    arm: right
+    state: 600
+  - step: z_level
+    description: "Move right arm up to Z level 309"
+    arm: right
+    height: 309

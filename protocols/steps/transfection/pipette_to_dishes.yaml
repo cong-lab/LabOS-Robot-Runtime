@@ -1,0 +1,130 @@
+protocol:
+  - step: go_to
+    description: "Move right arm pipette above dish"
+    arm: right
+    location: tf_dish_1
+    offset: [0, 0, 0]
+  - step: go_to
+    description: "Move left arm plunger arm above dish"
+    arm: left
+    location: tf_dish_2
+    offset: [0, 0, 0]
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: dispense_circle
+    description: "Dispense liquid across random points in a circular area"
+    arms: [right, left]
+    n_steps: 9
+    radius_mm: 30.0
+    z_top: 252.7
+    z_bottom: 249.5
+    speed: 80
+    acc: 150
+  - step: move
+    description: "Move left arm relative in base frame ([0, 0, 30])"
+    arm: left
+    frame: base
+    relative: [0, 0, 30]
+    speed: 80
+    acc: 150
+  - step: go_to
+    description: "Send left arm home"
+    arm: left
+    location: tf_left_home
+  - step: z_level
+    description: "Move right arm up to Z level 400"
+    arm: right
+    height: 400
+  - step: go_to
+    description: "Move right arm pipette back toward source tube"
+    arm: right
+    location: tf_dish_pip_1
+  - step: go_to
+    description: "Prepare to refill pipette from source tube"
+    arm: right
+    location: tf_dish_pip_2
+  - step: run
+    description: "Run pipette into tube sub-protocol"
+    file: pipette_into_tube.yaml
+  - step: go_to
+    description: "Move right arm pipette above dish"
+    arm: right
+    location: tf_dish_1
+    offset: [0, -90, 0]
+  - step: go_to
+    description: "Move left arm plunger arm above dish"
+    arm: left
+    location: tf_dish_2
+    offset: [0, -90, 0]
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: dispense_circle
+    description: "Dispense liquid across random points in a circular area"
+    arms: [right, left]
+    n_steps: 9
+    radius_mm: 30.0
+    z_top: 252.7
+    z_bottom: 249.5
+    speed: 80
+    acc: 150
+  - step: move
+    description: "Move left arm relative in base frame ([0, 0, 30])"
+    arm: left
+    frame: base
+    relative: [0, 0, 30]
+    speed: 80
+    acc: 150
+  - step: go_to
+    description: "Send left arm home"
+    arm: left
+    location: tf_left_home
+  - step: z_level
+    description: "Move right arm up to Z level 400"
+    arm: right
+    height: 400
+  - step: go_to
+    description: "Move right arm pipette back toward source tube"
+    arm: right
+    location: tf_dish_pip_1
+  - step: go_to
+    description: "Prepare to refill pipette from source tube"
+    arm: right
+    location: tf_dish_pip_2
+  - step: run
+    description: "Run pipette into tube sub-protocol"
+    file: pipette_into_tube.yaml
+  - step: go_to
+    description: "Move right arm pipette above dish"
+    arm: right
+    location: tf_dish_1
+    offset: [0, -180, 0]
+  - step: go_to
+    description: "Move left arm plunger arm above dish"
+    arm: left
+    location: tf_dish_2
+    offset: [0, -180, 0]
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: dispense_circle
+    description: "Dispense liquid across random points in a circular area"
+    arms: [right, left]
+    n_steps: 9
+    radius_mm: 30.0
+    z_top: 252.7
+    z_bottom: 249.5
+    speed: 80
+    acc: 150
+  - step: go_to
+    description: "Send left arm home"
+    arm: left
+    location: tf_left_home
+  - step: go_to
+    description: "Move right arm pipette away from dishes"
+    arm: right
+    location: tf_dish_3

@@ -1,0 +1,46 @@
+# Place the tube into the left placement rack.
+# Expects loop_offset: [x, y, z] from the repeat step.
+args:
+  loop_offset: [0, 0, 0]
+  travel_speed: 800
+  travel_acc: 1100
+  fine_speed: 400
+  fine_acc: 500
+  max_tcp_acc: 800
+  max_tcp_jerk: 4000
+
+protocol:
+  - step: go_to
+    location: miniprep_placerack
+    offset: "{{loop_offset}}"
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    description: Move above placement rack
+
+  - step: move_to_object
+    object: "14ml rack hole"
+    offset: [-1, 0]
+    speed: "{{fine_speed}}"
+    acc: "{{fine_acc}}"
+    pick_type: ranked_vertical
+    repeat: 3
+    average_frames: 10
+    min_frames: 3
+    repeat_skip_mm: 2.0
+    description: Center over rack hole
+
+  - step: z_level
+    height: 135
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    description: Lower tube into hole
+
+  - step: grip
+    state: 280
+    description: Release tube
+
+  - step: z_level
+    height: 185
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    description: Lift clear of rack

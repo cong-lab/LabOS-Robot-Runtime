@@ -1,0 +1,24 @@
+protocol:
+  - step: go_to
+    description: "Align pipette with tip box"
+    arm: right
+    location: tf_gb_tip_1
+  - step: go_to
+    description: "Align pipette with tip box"
+    arm: right
+    location: tf_gb_tip_1
+    offset: [-1.25, 0.25, 0]
+  - step: z_level
+    description: "Move right arm down to Z level 232"
+    arm: right
+    height: 232
+    speed: 70
+    acc: 100
+  - step: z_level
+    description: "Move right arm up to Z level 418"
+    arm: right
+    height: 418
+  - step: go_to
+    description: "Hold pipette at safe travel pose"
+    arm: right
+    location: tf_gb_pip_8

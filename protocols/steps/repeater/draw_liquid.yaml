@@ -1,0 +1,55 @@
+protocol:
+  - step: parallel
+    description: Move both arms over source tube
+    branches:
+      - arm: right
+        protocol:
+          - step: go_to
+            description: "Move over source tube"
+            location: repeater_over_tube
+      - arm: left
+        protocol:
+          - step: go_to
+            description: "Move over source tube"
+            location: repeater_over_tube
+  - step: go_to
+    description: "Insert repeater into source tube"
+    location: repeater_into_tube
+    arm: left
+  - step: grip
+    description: "Open right arm gripper to 380"
+    state: 380
+    arm: right
+  - step: go_to
+    description: "Insert repeater into source tube"
+    location: repeater_into_tube
+    arm: right
+  - step: grip
+    description: "Close right arm gripper to 80"
+    state: 80
+    arm: right
+  - step: go_to
+    description: "Lift repeater tab to draw liquid"
+    location: repeater_right_arm_lift
+    arm: right
+  - step: grip
+    description: "Close right arm gripper to 190"
+    state: 190
+    arm: right
+  - step: go_to
+    description: "Pull right arm back from lift tab"
+    location: repeater_right_pullback
+    arm: right
+  - step: parallel
+    description: Clear source tube
+    branches:
+      - arm: left
+        protocol:
+          - step: go_to
+            description: "Move over source tube"
+            location: repeater_over_tube
+      - arm: right
+        protocol:
+          - step: go_to
+            description: "Move to repeater home pose"
+            location: repeater_home

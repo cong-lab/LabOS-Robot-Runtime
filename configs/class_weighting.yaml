@@ -1,0 +1,47 @@
+version: 1
+dataset: /home/aira/Documents/LabOS-Runtime/robot/dataset
+source_annotations: /home/aira/Documents/LabOS-Runtime/robot/dataset/annotations.json
+weighting_method: inverse_sqrt_frequency_clamped
+normalization: median_frequency
+clamp:
+  min: 0.5
+  max: 2.0
+median_count_nonzero: 90.0
+class_counts:
+  Vortex Genie 2: 90
+  Vortex Genie Hole: 67
+  Vortex Genie Top Plate: 72
+  50ml eppendorf tube: 248
+  50Ml eppendorf cap: 50
+  50Ml 4 way rack: 96
+  4 way rack 50ml hole: 764
+  4 way rack 5ml hole: 0
+  rack 50mL hole: 0
+  50mL rack: 0
+  14ml round bottom tube top: 97
+  14ml rack hole: 715
+  14ml rack: 22
+  50Ml eppendorf cap top: 43
+  50Ml eppendorf orange cap top: 121
+  50Ml eppendorf blue cap top: 31
+  50Ml eppendorf orange cap: 142
+  50Ml eppendorf blue cap: 48
+class_weights:
+  Vortex Genie 2: 0.9
+  Vortex Genie Hole: 2.0
+  Vortex Genie Top Plate: 1.118
+  50ml eppendorf tube: 0.602
+  50Ml eppendorf cap: 0.6
+  50Ml 4 way rack: 0.8
+  4 way rack 50ml hole: 0.5
+  4 way rack 5ml hole: 1.0
+  rack 50mL hole: 1.0
+  50mL rack: 1.0
+  14ml round bottom tube top: 2.5
+  14ml rack hole: 0.85
+  14ml rack: 2.0
+  50Ml eppendorf cap top: 0.7
+  50Ml eppendorf orange cap top: 1.2
+  50Ml eppendorf blue cap top: 1.2
+  50Ml eppendorf orange cap: 0.5
+  50Ml eppendorf blue cap: 0.5

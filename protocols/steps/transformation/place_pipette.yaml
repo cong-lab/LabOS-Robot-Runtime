@@ -1,0 +1,10 @@
+args:
+  which_one: left
+
+protocol:
+  - step: python_call
+    description: "Run helper transformation.place_pipette"
+    module: transformation
+    function: place_pipette
+    args:
+      which_one: "{{which_one}}"

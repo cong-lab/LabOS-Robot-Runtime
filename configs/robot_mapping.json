@@ -1,0 +1,32 @@
+{
+  "right": {
+    "ip": "192.168.0.2",
+    "has_camera": true,
+    "camera_device": 1,
+    "camera_calibration": "configs/handeye_calibration_result.json",
+    "camera_intrinsics": "calibration_images/calibration_matrix.npy",
+    "camera_distortion": "calibration_images/distortion_coefficients.npy",
+    "handeye_data": "configs/handeye_calibration_data.json",
+    "tare": "configs/tare.json",
+    "on_linear_rail": false,
+    "end_effector": {
+      "type": "xarm-gripper2"
+    }
+  },
+  "left": {
+    "ip": "192.168.0.3",
+    "has_camera": false,
+    "camera_device": null,
+    "camera_calibration": null,
+    "camera_intrinsics": null,
+    "camera_distortion": null,
+    "handeye_data": null,
+    "tare": null,
+    "on_linear_rail": true,
+    "end_effector": {
+      "type": "zw-dm17",
+      "device_id": 1,
+      "baudrate": 115200
+    }
+  }
+}

@@ -1,0 +1,47 @@
+args:
+  handoff_object: orange cap
+  handoff_object_classes:
+    - orange circle
+    - orange cap
+    - 50ml orange cap centrifuge tube
+  handoff_yolo_classes:
+    - orange circle
+    - orange cap
+    - hand
+    - person
+  handoff_hand_class: hand
+  handoff_desired_position: [581, 656]
+  handoff_desired_area: 16000
+  handoff_area_tolerance: 2000
+  handoff_camera_device: 2
+  handoff_model: yoloe-11l-seg.pt
+  handoff_confidence: 0.03
+  handoff_grip_state: 200
+
+protocol:
+  - step: handoff
+    description: Use YOLOE velocity servoing to align with a hand-held tube and grip it
+    object: "{{handoff_object}}"
+    object_classes: "{{handoff_object_classes}}"
+    yolo_classes: "{{handoff_yolo_classes}}"
+    hand_class: "{{handoff_hand_class}}"
+    desired_position: "{{handoff_desired_position}}"
+    desired_area: "{{handoff_desired_area}}"
+    area_tolerance: "{{handoff_area_tolerance}}"
+    camera_device: "{{handoff_camera_device}}"
+    model: "{{handoff_model}}"
+    confidence: "{{handoff_confidence}}"
+    grip_state: "{{handoff_grip_state}}"
+    frame_width: 1280
+    frame_height: 800
+    position_tolerance_px: 20
+    pixel_to_mm_factor: 0.15
+    area_to_mm_factor: 0.001
+    max_xy_per_frame: 12.0
+    max_z_per_frame: 10.0
+    velocity_duration: 0.5
+    settle_seconds: 0.2
+    history_frames: 10
+    required_hits: 5
+    timeout_seconds: 60
+    display: true

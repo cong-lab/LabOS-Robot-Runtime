@@ -1,0 +1,37 @@
+protocol:
+  - step: go_to
+    description: "Move right arm pipette toward tip disposal"
+    arm: right
+    location: tf_disp_1
+  - step: go_to
+    description: "Place pipette at tip ejection point"
+    arm: right
+    location: tf_disp_2
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Move left arm plunger arm to tip ejector"
+    arm: left
+    location: tf_disp_3
+  - step: go_to
+    description: "Align plunger arm with tip ejector"
+    arm: left
+    location: tf_disp_4
+  - step: z_level
+    description: "Move left arm down to Z level 253"
+    arm: left
+    height: 253
+  - step: z_level
+    description: "Move left arm up to Z level 322"
+    arm: left
+    height: 322
+  - step: go_to
+    description: "Clear tip disposal station"
+    arm: left
+    location: tf_disp_5
+  - step: go_to
+    description: "Send left arm home"
+    arm: left
+    location: tf_left_home

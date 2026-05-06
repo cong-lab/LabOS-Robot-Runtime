@@ -1,0 +1,305 @@
+brief: "Close 1.5ml eppendorf tubes in the transformation rack."
+
+protocol:
+  - step: go_to
+    description: "Move left arm to transformation home pose"
+    arm: left
+    location: trans_home
+  - step: go_to
+    description: "Move right arm to transformation home pose"
+    arm: right
+    location: trans_home
+  - step: grip
+    description: "Open left arm gripper to 400"
+    arm: left
+    state: 400
+  - step: grip
+    description: "Open right arm gripper to 400"
+    arm: right
+    state: 400
+  - step: go_to
+    description: "Move right arm away from tube rack"
+    arm: right
+    location: trans_right_1.5_pickup_handoff_move_away
+
+  - step: grip
+    description: "Close left arm gripper to 270"
+    arm: left
+    state: 270
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 1"
+    arm: left
+    location: trans_left_1.5_pickup_1
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [0, 0, -0.5]
+  - step: z_level
+    description: "Move left arm down to Z level 69"
+    arm: left
+    height: 69
+  - step: grip
+    description: "Close left arm gripper to 105"
+    arm: left
+    state: 105
+  - step: z_level
+    description: "Move left arm up to Z level 200"
+    arm: left
+    height: 200
+  - step: go_to
+    description: "Move left arm tube to cap handoff position"
+    arm: left
+    location: trans_left_1.5_pickup_handoff
+  - step: go_to
+    description: "Move right arm to cap handoff position"
+    arm: right
+    location: trans_right_1.5_pickup_handoff_2
+  - step: grip
+    description: "Close right arm gripper to 55"
+    arm: right
+    state: 55
+  - step: grip
+    description: "Open left arm gripper to 500"
+    arm: left
+    state: 500
+  - step: z_level
+    description: "Move left arm up to Z level 300"
+    arm: left
+    height: 300
+  - step: grip
+    description: "Close left arm gripper to 250"
+    arm: left
+    state: 250
+  - step: z_level
+    description: "Move left arm down to Z level 287.3"
+    arm: left
+    height: 287.3
+  - step: grip
+    description: "Close left arm gripper to 160"
+    arm: left
+    state: 160
+  - step: go_to
+    description: "Begin pressing tube cap closed"
+    arm: left
+    location: trans_left_tube_close_partial
+  - step: z_level
+    description: "Move left arm down to Z level 277.0"
+    arm: left
+    height: 277.0
+  - step: z_level
+    description: "Move left arm up to Z level 285.0"
+    arm: left
+    height: 285.0
+  - step: go_to
+    description: "Continue closing tube cap"
+    arm: left
+    location: trans_left_tube_close_partial_2
+  - step: z_level
+    description: "Move left arm down to Z level 277.7"
+    arm: left
+    height: 277.7
+  - step: go_to
+    description: "Walk cap around tube rim"
+    arm: left
+    location: trans_left_tube_close_partial_3
+  - step: z_level
+    description: "Move left arm down to Z level 276.1"
+    arm: left
+    height: 276.1
+  - step: go_to
+    description: "Finish seating tube cap"
+    arm: left
+    location: trans_left_tube_close_partial_4
+  - step: go_to
+    description: "Recenter gripper on closed tube"
+    arm: left
+    location: trans_left_tube_close_recenter
+  - step: grip
+    description: "Open left arm gripper to 400"
+    arm: left
+    state: 400
+  - step: z_level
+    description: "Move left arm down to Z level 271.9"
+    arm: left
+    height: 271.9
+  - step: grip
+    description: "Close left arm gripper to 155"
+    arm: left
+    state: 155
+  - step: grip
+    description: "Open right arm gripper to 300"
+    arm: right
+    state: 300
+  - step: go_to
+    description: "Move right arm to cap handoff position"
+    arm: right
+    location: trans_right_1.5_pickup_handoff_2
+    offset: [0, 0, -20]
+  - step: go_to
+    description: "Move right arm away from tube rack"
+    arm: right
+    location: trans_right_1.5_pickup_handoff_move_away
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [0, 0, 60]
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [0, 0, 0]
+  - step: z_level
+    description: "Move left arm down to Z level 70.5"
+    arm: left
+    height: 70.5
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: z_level
+    description: "Move left arm up to Z level 200"
+    arm: left
+    height: 200
+
+  - step: grip
+    description: "Close left arm gripper to 270"
+    arm: left
+    state: 270
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 1"
+    arm: left
+    location: trans_left_1.5_pickup_1
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [0, -39, -0.5]
+  - step: z_level
+    description: "Move left arm down to Z level 69"
+    arm: left
+    height: 69
+  - step: grip
+    description: "Close left arm gripper to 105"
+    arm: left
+    state: 105
+  - step: z_level
+    description: "Move left arm up to Z level 200"
+    arm: left
+    height: 200
+  - step: go_to
+    description: "Move left arm tube to cap handoff position"
+    arm: left
+    location: trans_left_1.5_pickup_handoff
+  - step: go_to
+    description: "Move right arm to cap handoff position"
+    arm: right
+    location: trans_right_1.5_pickup_handoff_2
+  - step: grip
+    description: "Close right arm gripper to 55"
+    arm: right
+    state: 55
+  - step: grip
+    description: "Open left arm gripper to 500"
+    arm: left
+    state: 500
+  - step: z_level
+    description: "Move left arm up to Z level 300"
+    arm: left
+    height: 300
+  - step: grip
+    description: "Close left arm gripper to 250"
+    arm: left
+    state: 250
+  - step: z_level
+    description: "Move left arm down to Z level 287.3"
+    arm: left
+    height: 287.3
+  - step: grip
+    description: "Close left arm gripper to 160"
+    arm: left
+    state: 160
+  - step: go_to
+    description: "Begin pressing tube cap closed"
+    arm: left
+    location: trans_left_tube_close_partial
+  - step: z_level
+    description: "Move left arm down to Z level 277.0"
+    arm: left
+    height: 277.0
+  - step: z_level
+    description: "Move left arm up to Z level 285.0"
+    arm: left
+    height: 285.0
+  - step: go_to
+    description: "Continue closing tube cap"
+    arm: left
+    location: trans_left_tube_close_partial_2
+  - step: z_level
+    description: "Move left arm down to Z level 277.7"
+    arm: left
+    height: 277.7
+  - step: go_to
+    description: "Walk cap around tube rim"
+    arm: left
+    location: trans_left_tube_close_partial_3
+  - step: z_level
+    description: "Move left arm down to Z level 276.1"
+    arm: left
+    height: 276.1
+  - step: go_to
+    description: "Finish seating tube cap"
+    arm: left
+    location: trans_left_tube_close_partial_4
+  - step: go_to
+    description: "Recenter gripper on closed tube"
+    arm: left
+    location: trans_left_tube_close_recenter
+  - step: grip
+    description: "Open left arm gripper to 400"
+    arm: left
+    state: 400
+  - step: z_level
+    description: "Move left arm down to Z level 271.9"
+    arm: left
+    height: 271.9
+  - step: grip
+    description: "Close left arm gripper to 155"
+    arm: left
+    state: 155
+  - step: grip
+    description: "Open right arm gripper to 300"
+    arm: right
+    state: 300
+  - step: go_to
+    description: "Move right arm to cap handoff position"
+    arm: right
+    location: trans_right_1.5_pickup_handoff_2
+    offset: [0, 0, -20]
+  - step: go_to
+    description: "Move right arm away from tube rack"
+    arm: right
+    location: trans_right_1.5_pickup_handoff_move_away
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [0, -39, 60]
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [0, -39, 0]
+  - step: z_level
+    description: "Move left arm down to Z level 70.5"
+    arm: left
+    height: 70.5
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: z_level
+    description: "Move left arm up to Z level 200"
+    arm: left
+    height: 200

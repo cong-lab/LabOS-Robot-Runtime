@@ -1,0 +1,7 @@
+protocol:
+  - step: run
+    description: "Run grab pipette sub-protocol"
+    file: grab_pipette.yaml
+  - step: run
+    description: "Run get tip sub-protocol"
+    file: get_tip.yaml

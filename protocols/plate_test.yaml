@@ -1,0 +1,176 @@
+# Plate test protocol: open plate access, align to QR angle, pick/place the plate.
+# Run with: python run_protocol.py plate_test
+
+brief: "Open the plate area, align to a QR code angle, then pick and place the plate."
+
+args:
+  qr_camera_device: 0
+  qr_target_degrees: -90
+  qr_num_measurements: 9
+  qr_min_count: 6
+  qr_max_deviation: 5.0
+
+protocol:
+  - step: go_to
+    location: home
+    description: Start at home
+
+  - step: move_joint_absolute
+    description: Move to the plate opener approach position
+    angles: [-81.1, 11.2, -72.6, -31.9, 70.3, 30.4]
+    speed: 15
+
+  - step: grip
+    description: Partially close gripper to click down on the opener
+    state: 94
+
+  - step: move_joint_absolute
+    description: Click down on the opener
+    angles: [-76.3, 22.7, -75.4, -47.6, 82.6, 41.4]
+    speed: 15
+
+  - step: move_joint_absolute
+    description: Finish the click-down motion
+    angles: [-75.9, 23.1, -75.1, -47.6, 82.6, 41.4]
+    speed: 15
+
+  - step: grip
+    description: Relax the gripper after pressing the opener
+    state: 200
+
+  - step: move_joint_absolute
+    description: Move slightly out of the way
+    angles: [-73.8, 19.2, -76.8, -47.6, 82.6, 41.4]
+    speed: 15
+
+  - step: grip
+    description: Open gripper before sweeping the lid open
+    state: 850
+
+  - step: move_joint_absolute
+    description: Move to the open-lid position
+    angles: [-70.2, 24.4, -76.6, -71.0, 104.5, 41.4]
+    speed: 15
+
+  - step: move_joint_absolute
+    description: Begin opening the lid
+    angles: [-80.2, 14.5, -76.7, -62.4, 95.2, 28.9]
+    speed: 15
+
+  - step: move_joint_absolute
+    description: Continue opening the lid
+    angles: [-97.9, -0.1, -79.6, -31.5, 76.7, 5.8]
+    speed: 15
+
+  - step: move_joint_absolute
+    description: Continue the lid opening sweep
+    angles: [-110.2, 10.3, -104.1, -13.1, 91.1, -13.1]
+    speed: 15
+
+  - step: move_joint_absolute
+    description: Finish the lid opening sweep
+    angles: [-103.3, 11.5, -100.3, -53.3, 88.2, -12.2]
+    speed: 15
+
+  - step: qr_align
+    description: Measure QR code angle and rotate tool to align with the plate
+    camera_device: "{{qr_camera_device}}"
+    target_degrees: "{{qr_target_degrees}}"
+    num_measurements: "{{qr_num_measurements}}"
+    min_count: "{{qr_min_count}}"
+    max_deviation: "{{qr_max_deviation}}"
+    min_area: 400
+    max_area: 8000
+    speed: 10
+    acc: 5
+    display: true
+
+  - step: move_joint_absolute
+    description: Move above the center of the plate
+    angles: [-109.0, 7.2, -76.8, 0.3, 70.9]
+    preserve_current: true
+    speed: 20
+
+  - step: sleep
+    seconds: 0.1
+
+  - step: move_joint_absolute
+    description: Move down slightly toward the plate
+    angles: [-109.9, 8.5, -71.0, 0.3, 64.4]
+    preserve_current: true
+    speed: 20
+
+  - step: sleep
+    seconds: 0.5
+
+  - step: tool_position
+    description: Move right 30mm relative to the tool frame
+    relative: [0, 30, 0]
+    speed: 50
+    acc: 50
+
+  - step: sleep
+    seconds: 0.75
+
+  - step: tool_position
+    description: Move down 20mm relative to the tool frame
+    relative: [0, 0, 20]
+    speed: 30
+    acc: 50
+
+  - step: grip
+    description: Close slightly on the plate
+    state: 625
+
+  - step: tool_position
+    description: Move left slightly to center the grasp
+    relative: [0, -10, 0]
+    speed: 50
+    acc: 20
+
+  - step: grip
+    description: Close more on the plate
+    state: 300
+
+  - step: sleep
+    seconds: 0.1
+
+  - step: grip
+    description: Fully close on the plate
+    state: 30
+
+  - step: tool_position
+    description: Lift the plate back up
+    relative: [0, 0, -100]
+    speed: 30
+    acc: 50
+
+  - step: move_joint_absolute
+    description: Move to safe carry position
+    angles: [-122.9, -45.1, -40.8, 5.5, 88.1, -26.9]
+    speed: 30
+
+  - step: move_joint_absolute
+    description: Move down to place the plate
+    angles: [-146.6, 8.7, -38.2, 31.6, 74.2, -72.7]
+    speed: 30
+
+  - step: grip
+    description: Open gripper to release the plate
+    state: 850
+
+  - step: move_joint_absolute
+    description: Move away from the placed plate
+    angles: [-148.5, 8.7, -40.5, 26.5, 66.4, -72.7]
+    speed: 30
+
+  - step: move_joint_absolute
+    description: Return home
+    angles: [-109.0, -71.3, -20.3, 2.3, 91.3, -8.9]
+    speed: 30
+
+failure:
+  - step: grip
+    state: 850
+  - step: stop
+    description: Plate test protocol failed

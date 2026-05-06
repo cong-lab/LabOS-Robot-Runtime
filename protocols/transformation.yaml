@@ -1,0 +1,74 @@
+brief: "Bacterial transformation workflow migrated from transformation.py active blocks."
+
+args:
+  max_tcp_speed: 400
+  max_tcp_acc: 800
+  max_tcp_jerk: 1300
+  max_joint_speed: 60
+  max_joint_acc: 800
+  max_joint_jerk: 1300
+
+protocol:
+  - step: set_tcp_limits
+    description: "Configure TCP motion limits"
+    arm: right
+    max_speed: "{{max_tcp_speed}}"
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+  - step: set_joint_limits
+    description: "Configure joint motion limits"
+    arm: right
+    max_speed: "{{max_joint_speed}}"
+    max_acc: "{{max_joint_acc}}"
+    jerk: "{{max_joint_jerk}}"
+  - step: set_tcp_limits
+    description: "Configure TCP motion limits"
+    arm: left
+    max_speed: "{{max_tcp_speed}}"
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+  - step: set_joint_limits
+    description: "Configure joint motion limits"
+    arm: left
+    max_speed: "{{max_joint_speed}}"
+    max_acc: "{{max_joint_acc}}"
+    jerk: "{{max_joint_jerk}}"
+  - step: run
+    file: steps/transformation/pickup_pipette_buffer_dispense.yaml
+    description: Prepare first pipette and dispense into tube
+  - step: run
+    file: steps/transformation/heat_shock.yaml
+    description: Heat shock E. coli tube
+  - step: run
+    file: steps/transformation/open_buffer_tube.yaml
+    description: Open buffer tube
+  - step: run
+    file: steps/transformation/pipette_buffer_to_ecoli.yaml
+    description: Pipette buffer into E. coli tube
+  - step: run
+    file: steps/transformation/remove_agar_lid.yaml
+    description: Remove agar plate lid
+  - step: run
+    file: steps/transformation/dispense_to_plate.yaml
+    description: Dispense cells onto agar plate and return pipette
+  - step: run
+    file: steps/transformation/agar_plate_roll.yaml
+    description: Replace lid and roll agar plate
+
+failure:
+  - step: grip
+    description: "Open right arm gripper to 600"
+    arm: right
+    state: 600
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: go_to
+    description: "Move left arm to transformation home pose"
+    location: trans_home
+    arm: left
+  - step: go_to
+    description: "Move right arm to transformation home pose"
+    location: trans_home
+    arm: right

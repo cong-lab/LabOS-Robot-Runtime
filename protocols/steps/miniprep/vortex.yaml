@@ -1,0 +1,27 @@
+# Vortex the tube currently held in the gripper.
+args:
+  vortex_time: 2.0
+  travel_speed: 900
+  travel_acc: 1100
+
+protocol:
+  - step: go_to
+    location: miniprep_vortexer
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    offset: [0, 0, 0]
+    description: Move above vortexer
+
+  - step: z_level
+    height: 228
+    description: Lower tube onto vortexer
+
+  - step: sleep
+    seconds: "{{vortex_time}}"
+    description: Vortex
+
+  - step: z_level
+    height: 307
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    description: Lift tube off vortexer

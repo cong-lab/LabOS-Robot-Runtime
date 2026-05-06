@@ -1,0 +1,57 @@
+# Pick up a 14ml tube from the right rack.
+# Expects loop_offset: [x, y, z] from the repeat step.
+args:
+  loop_offset: [0, 0, 0]
+  travel_speed: 800
+  travel_acc: 1000
+  fine_speed: 400
+  fine_acc: 500
+  max_tcp_acc: 800
+  max_tcp_jerk: 4000
+
+protocol:
+  - step: go_to
+    location: miniprep_rack
+    offset: "{{loop_offset}}"
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    description: Move above rack position
+
+  - step: grip
+    state: 300
+    description: Open gripper
+
+  - step: wait_until_visible
+    object: "14ml tube"
+    min_frames: 3
+    delay: 2.0
+    poll_interval: 0.2
+    description: Wait until a tube is visible in the rack
+
+  - step: move_to_object
+    object: "14ml tube"
+    offset: [3.5, 2.5]
+    speed: "{{fine_speed}}"
+    acc: "{{fine_acc}}"
+    pick_type: ranked_vertical
+    repeat: 3
+    average_frames: 5
+    min_frames: 3
+    repeat_skip_mm: 2.0
+    description: Center over tube
+
+  - step: z_level
+    height: 77
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    description: Lower to grab height
+
+  - step: grip
+    state: 130
+    description: Close gripper on tube
+
+  - step: z_level
+    height: 200
+    speed: "{{travel_speed}}"
+    acc: "{{travel_acc}}"
+    description: Lift tube

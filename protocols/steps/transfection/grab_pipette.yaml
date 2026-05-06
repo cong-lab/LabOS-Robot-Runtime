@@ -1,0 +1,45 @@
+protocol:
+  - step: grip
+    description: "Open right arm gripper to 680"
+    arm: right
+    state: 680
+  - step: go_to
+    description: "Approach the pipette rack"
+    arm: right
+    location: tf_gb_pip_1
+  - step: go_to
+    description: "Align with the pipette handle"
+    arm: right
+    location: tf_gb_pip_2
+  - step: go_to
+    description: "Move right arm into pipette pickup path"
+    arm: right
+    location: tf_gb_pip_3
+  - step: go_to
+    description: "Seat gripper around the pipette"
+    arm: right
+    location: tf_gb_pip_4
+  - step: grip
+    description: "Close right arm gripper to 180"
+    arm: right
+    state: 180
+  - step: go_to
+    description: "Lift pipette from holder"
+    arm: right
+    location: tf_gb_pip_5
+  - step: go_to
+    description: "Pull pipette out from rack"
+    arm: right
+    location: tf_gb_pip_6
+  - step: go_to
+    description: "Clear pipette rack"
+    arm: right
+    location: tf_gb_pip_7
+  - step: go_to
+    description: "Transition pipette to travel pose"
+    arm: right
+    location: tf_gb_pip_7.5
+  - step: go_to
+    description: "Hold pipette at safe travel pose"
+    arm: right
+    location: tf_gb_pip_8

@@ -1,0 +1,77 @@
+protocol:
+  - step: go_to
+    description: "Move right arm pipette over agar plate"
+    arm: right
+    location: trans_right_agar_plate_pipette
+  - step: grip
+    description: "Open left arm gripper to 650"
+    arm: left
+    state: 650
+  - step: z_level
+    description: "Move right arm down to Z level 252.9"
+    arm: right
+    height: 252.9
+  - step: go_to
+    description: "Move left arm to agar plate plunger position"
+    arm: left
+    location: trans_left_agar_plate_pipette
+  - step: z_level
+    description: "Move left arm down to Z level 215.7"
+    arm: left
+    height: 215.7
+  - step: sleep
+    description: "Wait 0.25 seconds"
+    seconds: 0.25
+  - step: z_level
+    description: "Move left arm up to Z level 308"
+    arm: left
+    height: 308
+  - step: go_to
+    description: "Pull plunger arm away after plate dispense"
+    arm: left
+    location: trans_left_agar_plate_pipette_pullaway
+  - step: z_level
+    description: "Move right arm up to Z level 480"
+    arm: right
+    height: 480
+  - step: go_to
+    description: "Move right arm pipette to tip disposal after plating"
+    arm: right
+    location: trans_right_pipette_3_disp
+  - step: z_level
+    description: "Move right arm down to Z level 301.4"
+    arm: right
+    height: 301.4
+  - step: go_to
+    description: "Prepare left arm for tip ejection"
+    arm: left
+    location: trans_left_pipette_3_disp_prep
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Press tip ejector for second pipette"
+    arm: left
+    location: trans_left_pipette_3_disp_prep_2
+  - step: z_level
+    description: "Move left arm down to Z level 238.4"
+    arm: left
+    height: 238.4
+  - step: z_level
+    description: "Move left arm up to Z level 417"
+    arm: left
+    height: 417
+  - step: go_to
+    description: "Back plunger arm away from buffer pipette"
+    arm: left
+    location: trans_left_pipette_buffer_1.5_backoff
+  - step: z_level
+    description: "Move right arm up to Z level 501"
+    arm: right
+    height: 501
+  - step: run
+    description: "Run place pipette sub-protocol"
+    file: place_pipette.yaml
+    args:
+      which_one: middle

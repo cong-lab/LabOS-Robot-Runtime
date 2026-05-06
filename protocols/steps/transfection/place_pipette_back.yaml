@@ -1,0 +1,49 @@
+protocol:
+  - step: go_to
+    description: "Start returning pipette to rack"
+    arm: right
+    location: tf_pip_back_1
+  - step: go_to
+    description: "Align pipette with rack return path"
+    arm: right
+    location: tf_pip_back_2
+  - step: go_to
+    description: "Move right arm pipette toward holder"
+    arm: right
+    location: tf_pip_back_3
+  - step: go_to
+    description: "Approach pipette holder"
+    arm: right
+    location: tf_pip_back_4
+  - step: go_to
+    description: "Lower pipette into holder path"
+    arm: right
+    location: tf_pip_back_5
+  - step: go_to
+    description: "Seat pipette into holder"
+    arm: right
+    location: tf_pip_back_6
+  - step: go_to
+    description: "Finalize pipette placement"
+    arm: right
+    location: tf_pip_back_7
+  - step: go_to
+    description: "Release-ready pipette position"
+    arm: right
+    location: tf_pip_back_8
+  - step: grip
+    description: "Open right arm gripper to 850"
+    arm: right
+    state: 850
+  - step: go_to
+    description: "Back away from returned pipette"
+    arm: right
+    location: tf_pip_back_9
+  - step: go_to
+    description: "Clear pipette rack after return"
+    arm: right
+    location: tf_pip_back_10
+  - step: go_to
+    description: "Return arm to safe post-pipette pose"
+    arm: right
+    location: tf_pip_back_11

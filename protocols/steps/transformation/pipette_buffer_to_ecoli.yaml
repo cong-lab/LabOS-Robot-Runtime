@@ -1,0 +1,123 @@
+protocol:
+  - step: go_to
+    description: "Move left arm clear for buffer tube work"
+    arm: left
+    location: trans_left_buffer_prep_backoff
+  - step: run
+    description: "Run grab pipette sub-protocol"
+    file: grab_pipette.yaml
+    args:
+      which_one: middle
+  - step: go_to
+    description: "Prepare second pipette for tip pickup"
+    arm: right
+    location: trans_right_pipette_3_prep
+  - step: z_level
+    description: "Move right arm down to Z level 261"
+    arm: right
+    height: 261
+  - step: z_level
+    description: "Move right arm down to Z level 240.8"
+    arm: right
+    height: 240.8
+    speed: 100
+    acc: 200
+  - step: z_level
+    description: "Move right arm up to Z level 528"
+    arm: right
+    height: 528
+  - step: go_to
+    description: "Move right arm pipette into buffer tube"
+    arm: right
+    location: trans_right_pipette_buffer
+  - step: z_level
+    description: "Move right arm down to Z level 263.2"
+    arm: right
+    height: 263.2
+  - step: grip
+    description: "Open left arm gripper to 650"
+    arm: left
+    state: 650
+  - step: go_to
+    description: "Prepare left arm to operate buffer pipette"
+    arm: left
+    location: trans_left_pipette_buffer_prep
+  - step: go_to
+    description: "Press buffer pipette to first stop"
+    arm: left
+    location: trans_left_pipette_buffer_first_stop
+  - step: go_to
+    description: "Pull plunger arm away from buffer pipette"
+    arm: left
+    location: trans_left_pipette_buffer_pull_away
+  - step: go_to
+    description: "Move left arm clear for buffer tube work"
+    arm: left
+    location: trans_left_buffer_prep_backoff
+  - step: z_level
+    description: "Move right arm up to Z level 583"
+    arm: right
+    height: 583
+  - step: go_to
+    description: "Move right arm buffer-loaded pipette to bacteria tube"
+    arm: right
+    location: trans_right_pipette_buffer_bacteria_tube
+  - step: z_level
+    description: "Move right arm down to Z level 378.6"
+    arm: right
+    height: 378.6
+  - step: go_to
+    description: "Prepare left arm to dispense buffer into tube"
+    arm: left
+    location: trans_left_pipette_buffer_1.5_prep
+  - step: go_to
+    description: "Position plunger arm for buffer dispense"
+    arm: left
+    location: trans_left_pipette_buffer_1.5_prep_2
+    offset: [0, 0, -15]
+    speed: 50
+    acc: 100
+  - step: go_to
+    description: "Press buffer pipette to second stop"
+    arm: left
+    location: trans_left_pipette_buffer_1.5_second_stop
+    offset: [0, 0, -15]
+    speed: 50
+    acc: 100
+  - step: go_to
+    description: "Return buffer pipette to first stop"
+    arm: left
+    location: trans_left_pipette_buffer_1.5_first_stop
+    offset: [0, 0, -15]
+    speed: 50
+    acc: 100
+  - step: repeat
+    description: "Repeat nested steps 4 times"
+    count: 4
+    protocol:
+      - step: go_to
+        description: "Move left arm to trans left pipette buffer 1.5 prep 2"
+        arm: left
+        location: trans_left_pipette_buffer_1.5_prep_2
+        offset: [0, 0, -15]
+        speed: 50
+        acc: 100
+      - step: go_to
+        description: "Move left arm to trans left pipette buffer 1.5 first stop"
+        arm: left
+        location: trans_left_pipette_buffer_1.5_first_stop
+        offset: [0, 0, -15]
+        speed: 50
+        acc: 100
+  - step: go_to
+    description: "Back plunger arm away from buffer pipette"
+    arm: left
+    location: trans_left_pipette_buffer_1.5_backoff
+  - step: z_level
+    description: "Move right arm up to Z level 528"
+    arm: right
+    height: 528
+  - step: go_to
+    description: "Park pipette after buffer dispense"
+    arm: right
+    location: trans_right_pipette_wait

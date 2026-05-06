@@ -1,0 +1,99 @@
+brief: "Full repeater pipette pickup, handoff, dispense, and return."
+
+args:
+  max_tcp_acc: 700
+  max_tcp_jerk: 1200
+  tube_count: 5
+  tube_spacing: -40
+
+protocol:
+  -
+    step: set_tcp_limits
+    arm: right
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+    description: Configure right arm TCP limits
+  -
+    step: set_tcp_limits
+    arm: left
+    max_acc: "{{max_tcp_acc}}"
+    jerk: "{{max_tcp_jerk}}"
+    description: Configure left arm TCP limits
+  -
+    step: go_to
+    description: "Move right arm to repeater home pose"
+    location: repeater_home
+    arm: right
+  -
+    step: go_to
+    description: "Move left arm to repeater home pose"
+    location: repeater_home
+    arm: left
+  -
+    step: hand_position
+    description: "Set left arm hand to hand/fully-open"
+    location: hand/fully-open
+    arm: left
+  -
+    step: run
+    file: steps/repeater/pickup_pipette.yaml
+    arm: right
+    description: Pick up repeater pipette
+  -
+    step: parallel
+    description: Bring both arms together for handoff
+    branches:
+      -
+        arm: left
+        protocol:
+          -
+            step: go_to
+            description: "Move to repeater bring to left"
+            location: repeater_bring_to_left
+      -
+        arm: right
+        protocol:
+          -
+            step: go_to
+            description: "Move to repeater bring to left"
+            location: repeater_bring_to_left
+  -
+    step: run
+    file: steps/repeater/handoff_to_left.yaml
+    description: Hand off repeater to left hand
+  -
+    step: run
+    file: steps/repeater/draw_liquid.yaml
+    description: Draw liquid into repeater
+  -
+    step: run
+    file: steps/repeater/dispense_loop.yaml
+    description: Dispense first column
+    args:
+      start_offset: [0, 0, 0]
+      tube_count: "{{tube_count}}"
+      tube_spacing: "{{tube_spacing}}"
+  -
+    step: run
+    file: steps/repeater/dispense_loop.yaml
+    description: Dispense second column
+    args:
+      start_offset: [60, 0, 0]
+      tube_count: "{{tube_count}}"
+      tube_spacing: "{{tube_spacing}}"
+  -
+    step: run
+    file: steps/repeater/return_pipette.yaml
+    description: Return repeater pipette to rack
+
+failure:
+  -
+    step: go_to
+    description: "Move right arm to repeater home pose"
+    location: repeater_home
+    arm: right
+  -
+    step: go_to
+    description: "Move left arm to repeater home pose"
+    location: repeater_home
+    arm: left

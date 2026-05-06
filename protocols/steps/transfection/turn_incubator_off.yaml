@@ -1,0 +1,20 @@
+protocol:
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Move left arm to incubator stop button"
+    arm: left
+    location: tf_inc_stop
+  - step: z_level
+    description: "Move left arm down to Z level 29.5"
+    arm: left
+    height: 29.5
+  - step: sleep
+    description: "Wait 2.25 seconds"
+    seconds: 2.25
+  - step: z_level
+    description: "Move left arm up to Z level 70"
+    arm: left
+    height: 70

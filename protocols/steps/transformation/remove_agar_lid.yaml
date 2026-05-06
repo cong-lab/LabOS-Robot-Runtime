@@ -1,0 +1,41 @@
+protocol:
+  - step: go_to
+    description: "Approach agar plate lid"
+    arm: left
+    location: trans_agar_lid_prep
+  - step: grip
+    description: "Open left arm gripper to 370"
+    arm: left
+    state: 370
+  - step: z_level
+    description: "Move left arm down to Z level -90.3"
+    arm: left
+    height: -90.3
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: z_level
+    description: "Move left arm up to Z level 180"
+    arm: left
+    height: 180
+  - step: go_to
+    description: "Move left arm agar lid to staging location"
+    arm: left
+    location: trans_agar_lid_prep_place
+  - step: go_to
+    description: "Lower agar lid onto staging location"
+    arm: left
+    location: trans_agar_lid_prep_place_down
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: go_to
+    description: "Move left arm agar lid to staging location"
+    arm: left
+    location: trans_agar_lid_prep_place
+  - step: go_to
+    description: "Move left arm back toward staged agar lid"
+    arm: left
+    location: trans_agar_lid_prep_place_pullaway

@@ -1,0 +1,42 @@
+# Turn on the vortexer by pressing the switch with the left arm (two press cycles).
+args: {}
+
+protocol:
+  # --- press cycle 1 ---
+  - step: grip
+    state: 850
+    arm: left
+    description: Open gripper wide
+
+  - step: go_to
+    location: miniprep_switch_position
+    arm: left
+    description: Move to switch area
+
+  - step: go_to
+    location: miniprep_switch_position_close
+    arm: left
+    description: Move to switch press position
+
+  - step: grip
+    state: 180
+    arm: left
+    description: Press switch
+
+  - step: sleep
+    seconds: 0.5
+
+  - step: grip
+    state: 600
+    arm: left
+    description: Release switch
+
+  - step: go_to
+    location: miniprep_switch_position
+    arm: left
+    description: Retract from switch
+
+  - step: go_to
+    location: miniprep_left_home
+    arm: left
+    description: Return left arm home

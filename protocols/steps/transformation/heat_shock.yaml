@@ -1,0 +1,129 @@
+protocol:
+  - step: grip
+    description: "Close left arm gripper to 270"
+    arm: left
+    state: 270
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 1"
+    arm: left
+    location: trans_left_1.5_pickup_1
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [2, 0, -0.5]
+  - step: z_level
+    description: "Move left arm down to Z level 69.25"
+    arm: left
+    height: 69.25
+  - step: grip
+    description: "Close left arm gripper to 100"
+    arm: left
+    state: 100
+  - step: z_level
+    description: "Move left arm up to Z level 200"
+    arm: left
+    height: 200
+  - step: go_to
+    description: "Move left arm tube to heat shock block"
+    arm: left
+    location: trans_heat_shock_prep
+  - step: z_level
+    description: "Move left arm down to Z level 89"
+    arm: left
+    height: 89
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: z_level
+    description: "Move left arm up to Z level 200"
+    arm: left
+    height: 200
+  - step: go_to
+    description: "Approach heat shock controls"
+    arm: left
+    location: trans_heat_shock_prep_button
+  - step: grip
+    description: "Close left arm gripper to 0"
+    arm: left
+    state: 0
+  - step: go_to
+    description: "Press heat shock control button"
+    arm: left
+    location: trans_heat_shock_prep_button_2
+    speed: 200
+    acc: 300
+  - step: z_level
+    description: "Move left arm down to Z level 29.9"
+    arm: left
+    height: 29.9
+    speed: 100
+    acc: 200
+  - step: sleep
+    description: "Wait 0.5 seconds"
+    seconds: 0.5
+  - step: go_to
+    description: "Press heat shock control button"
+    arm: left
+    location: trans_heat_shock_prep_button_2
+    offset: [1, -19, 0]
+    speed: 200
+    acc: 300
+  - step: z_level
+    description: "Move left arm down to Z level 29.9"
+    arm: left
+    height: 29.9
+    speed: 100
+    acc: 200
+  - step: sleep
+    description: "Wait 0.25 seconds"
+    seconds: 0.25
+  - step: z_level
+    description: "Move left arm up to Z level 100"
+    arm: left
+    height: 100
+  - step: sleep
+    description: "Wait 50 seconds"
+    seconds: 50
+  - step: go_to
+    description: "Move left arm tube to heat shock block"
+    arm: left
+    location: trans_heat_shock_prep
+  - step: grip
+    description: "Close left arm gripper to 270"
+    arm: left
+    state: 270
+  - step: z_level
+    description: "Move left arm down to Z level 87.5"
+    arm: left
+    height: 87.5
+  - step: grip
+    description: "Close left arm gripper to 120"
+    arm: left
+    state: 120
+  - step: z_level
+    description: "Move left arm up to Z level 160"
+    arm: left
+    height: 160
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 1"
+    arm: left
+    location: trans_left_1.5_pickup_1
+  - step: go_to
+    description: "Move to trans left 1.5ml eppendorf tube pickup 2"
+    arm: left
+    location: trans_left_1.5_pickup_2
+    offset: [2, 0, 19.5]
+  - step: z_level
+    description: "Move left arm down to Z level 70.5"
+    arm: left
+    height: 70.5
+  - step: grip
+    description: "Open left arm gripper to 300"
+    arm: left
+    state: 300
+  - step: z_level
+    description: "Move left arm up to Z level 200"
+    arm: left
+    height: 200
