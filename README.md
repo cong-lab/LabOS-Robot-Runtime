@@ -24,7 +24,15 @@ The normal install path is:
 ```bash
 git clone https://github.com/cong-lab/LabOS-Robot-Runtime.git
 cd LabOS-Robot-Runtime
+git lfs pull
 python -m pip install -r requirements.txt
+```
+
+The segmentation model at `weights/robot-segmentation.pt` is stored with Git LFS. If that file is missing or looks like a small text pointer after cloning, install Git LFS and fetch the model:
+
+```bash
+git lfs install
+git lfs pull
 ```
 
 `requirements.txt` installs the LabOS Python API directly from GitHub:
