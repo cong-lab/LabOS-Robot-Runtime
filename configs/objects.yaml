@@ -19,6 +19,49 @@ default_confidence: 0.2
   yolo_class: "50Ml eppendorf cap"
   pick_type: toolhead_close
 
+50ml eppendorf cap top:
+  shape:
+    type: circle
+    diameter: 33
+    location: center
+  yolo_class:
+    - "50Ml eppendorf cap top"
+    - "50Ml eppendorf orange cap top"
+    - "50Ml eppendorf blue cap top"
+  pick_type: toolhead_close
+
+50ml eppendorf orange cap top:
+  shape:
+    type: circle
+    diameter: 33
+    location: center
+  yolo_class: "50Ml eppendorf orange cap top"
+  pick_type: toolhead_close
+
+50ml eppendorf blue cap top:
+  shape:
+    type: circle
+    diameter: 33
+    location: center
+  yolo_class: "50Ml eppendorf blue cap top"
+  pick_type: toolhead_close
+
+50ml eppendorf orange cap:
+  shape:
+    type: circle
+    diameter: 33
+    location: center
+  yolo_class: "50Ml eppendorf orange cap"
+  pick_type: toolhead_close
+
+50ml eppendorf blue cap:
+  shape:
+    type: circle
+    diameter: 33
+    location: center
+  yolo_class: "50Ml eppendorf blue cap"
+  pick_type: toolhead_close
+
 vortex genie hole:
   shape:
     type: circle
@@ -27,6 +70,16 @@ vortex genie hole:
   yolo_class: "Vortex Genie Hole"
   confidence: 0.1
   pick_type: ranked  # pick the largest area / highest confidence detection (by getting average rank)
+
+vortex genie 2:
+  shape:
+    type: rect
+    width: 100
+    height: 140
+    location: center
+  yolo_class: "Vortex Genie 2"
+  confidence: 0.1
+  pick_type: ranked
 
 rack hole:
   shape:
@@ -60,7 +113,7 @@ rack hole:
 vision_models:
   - eppendorf:
       weights: robot-segmentation.pt
-      classes: [50ml eppendorf, vortex genie hole, 14ml tube, 14ml rack hole, rack hole]
+      classes: [50ml eppendorf, 50ml eppendorf cap top, 50ml eppendorf orange cap top, 50ml eppendorf blue cap top, 50ml eppendorf orange cap, 50ml eppendorf blue cap, vortex genie hole, vortex genie 2, 14ml tube, 14ml rack hole, rack hole]
   # - 14ml tube:
   #     weights: segment14ml.pt
   #     classes: [14ml tube, 14ml rack hole, vortex genie hole]

@@ -7,7 +7,7 @@ train: images
 val: images
 
 # Number of classes
-nc: 13
+nc: 18
 
 # Class names
 names:
@@ -19,7 +19,13 @@ names:
   5: 50Ml 4 way rack
   6: 4 way rack 50ml hole
   7: 4 way rack 5ml hole
+  8: rack 50mL hole
+  9: 50mL rack
   10: 14ml round bottom tube top
   11: 14ml rack hole
   12: 14ml rack
-
+  13: 50Ml eppendorf cap top
+  14: 50Ml eppendorf orange cap top
+  15: 50Ml eppendorf blue cap top
+  16: 50Ml eppendorf orange cap
+  17: 50Ml eppendorf blue cap

@@ -20,7 +20,7 @@ import queue
 import threading
 import time
 from pathlib import Path
-from typing import Optional, Tuple, List, Any, Dict, Union, Callable, TYPE_CHECKING
+from typing import Optional, Tuple, List, Any, Dict, Union, Callable, TYPE_CHECKING, Sequence
 import numpy as np
 import cv2
 
@@ -34,11 +34,21 @@ class ObjectNotFoundError(RuntimeError):
     """Raised by move_to_object when the target object is not detected."""
 
 
+class XArmFailure(RuntimeError):
+    """Raised when an xArm API call returns a non-zero error code."""
+
+    def __init__(self, action: str, code: int):
+        self.action = action
+        self.code = int(code)
+        super().__init__(f"XArmFailure: {action} failed with xArm code={self.code}")
+
+
 # Vision display thread: shows camera + YOLO in a separate window from program start.
 # Feeds _vision_frame_queue so move_to_object can get frames without pausing the viewer.
 _vision_display_thread: Optional[threading.Thread] = None
 _vision_display_stop = threading.Event()
 _vision_display_last_frame: Optional[np.ndarray] = None
+_vision_display_last_color_frame: Optional[np.ndarray] = None
 _vision_display_lock = threading.Lock()
 _vision_frame_queue: "queue.Queue[Tuple[Any, Any, Any]]" = queue.Queue(maxsize=1)  # (color_image, depth_image, yolo_results)
 
@@ -404,7 +414,7 @@ def _estimate_detection_depth_mm(
 
 def _vision_display_loop() -> None:
     """Background thread: show camera + YOLO detections and depth (if available). Feeds _vision_frame_queue so move_to_object can get frames without pausing."""
-    global _vision_display_last_frame
+    global _vision_display_last_color_frame, _vision_display_last_frame
     from aira.vision.singletons import camera, yolo
 
     # Placeholder so the window is never gray before first frame
@@ -448,6 +458,7 @@ def _vision_display_loop() -> None:
         disp = color_image.copy()
         color_shape = color_image.shape
         depth_shape = (depth_image.shape[:2] if depth_image is not None else (0, 0))
+        names = getattr(model, "names", {})
         if results and len(results) > 0 and results[0].boxes is not None:
             boxes = results[0].boxes
             for i in range(len(boxes)):
@@ -455,12 +466,27 @@ def _vision_display_loop() -> None:
                 x1, y1, x2, y2 = map(int, box)
                 cls_id = int(boxes.cls[i])
                 color = _VISION_CLASS_COLORS[cls_id % len(_VISION_CLASS_COLORS)]
-                names = getattr(model, "names", {})
                 label = names.get(cls_id, str(cls_id)) if isinstance(names, dict) else str(cls_id)
                 conf_val = float(boxes.conf[i])
                 cv2.rectangle(disp, (x1, y1), (x2, y2), color, 3)
                 cv2.putText(disp, f"{label} {conf_val:.2f}", (x1, y1 - 5),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+        try:
+            from aira.vision.singletons import calibration
+            from aira.vision.vision import analyze_rack, draw_rack_overlay
+
+            cal = calibration()
+            rack_scene = analyze_rack(
+                color_image,
+                model,
+                cal["K"],
+                names,
+                results=results,
+                conf=conf,
+            )
+            disp = draw_rack_overlay(disp, rack_scene)
+        except Exception:
+            pass
         try:
             _vision_frame_queue.put_nowait((color_image, depth_image, results))
         except queue.Full:
@@ -542,7 +568,10 @@ def _vision_display_loop() -> None:
             combined = cv2.resize(combined, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
         with _vision_display_lock:
-            _vision_display_last_frame = combined
+            # Keep a separate buffer for publishers/readers; cv2.imshow may
+            # still be using `combined` in native code after this point.
+            _vision_display_last_color_frame = np.ascontiguousarray(disp.copy())
+            _vision_display_last_frame = np.ascontiguousarray(combined.copy())
         last_display = combined
         cv2.imshow(VISION_WINDOW_NAME, combined)
         cv2.waitKey(30)
@@ -1382,7 +1411,7 @@ class ArmProxy:
 
     def move_to_object(
         self,
-        object_name: str,
+        object_name: Union[str, Sequence[str]],
         offset: Optional[Tuple[float, ...]] = None,
         pick_type: Optional[str] = None,
         average_frames: int = 5,
@@ -1395,6 +1424,8 @@ class ArmProxy:
         raise_on_not_found: bool = False,
         min_frames: int = 1,
         iou_threshold: float = 0.7,
+        available: Optional[Dict[str, str]] = None,
+        filter: Optional[Union[str, Sequence[str]]] = None,
         **kwargs: Any,
     ) -> Dict[str, Any]:
         """Move toolhead to the named object (from objects.yaml).
@@ -1410,18 +1441,54 @@ class ArmProxy:
             false positives.
         iou_threshold: IoU threshold for grouping detections across frames
             into the same tracked object (default 0.7).
+        available: optional mapping of color names to hex colors for palette
+            based filtering, e.g. {"green": "#27ae60"}.
+        filter: optional color name or names from *available* to keep before
+            applying *pick_type*.
         """
-        from aira.vision.singletons import yolo_for_object
-        yolo_for_object(object_name)
+        from aira.vision.singletons import yolo_for_object, yolo_weights_for_object
 
         objects = _load_objects_for_robot()
         presets = _object_presets_only(objects)
-        if object_name not in presets:
-            raise ValueError(f"Unknown object '{object_name}' (not in configs/objects.yaml)")
-        preset = objects[object_name]
+        if isinstance(object_name, str):
+            object_names = [object_name]
+        else:
+            object_names = list(object_name)
+        if not object_names:
+            raise ValueError("At least one object name is required")
+
+        for name in object_names:
+            if name not in presets:
+                raise ValueError(f"Unknown object '{name}' (not in configs/objects.yaml)")
+
+        weights_by_name = {name: yolo_weights_for_object(name) for name in object_names}
+        resolved_weights = {w for w in weights_by_name.values() if w is not None}
+        if len(resolved_weights) > 1:
+            raise ValueError(
+                "All object names in one move_to_object call must use the same YOLO weights: "
+                f"{weights_by_name}"
+            )
+        yolo_for_object(object_names[0])
+
+        preset = objects[object_names[0]]
         shape = preset.get("shape", {})
         yolo_class = preset.get("yolo_class")
         conf_threshold = _conf_for_preset(objects, preset)
+        targets = []
+        for name in object_names:
+            target_preset = objects[name]
+            target_classes = target_preset.get("yolo_class")
+            if isinstance(target_classes, (list, tuple)):
+                yolo_classes = target_classes
+            else:
+                yolo_classes = [target_classes]
+            for target_class in yolo_classes:
+                targets.append({
+                    "object_name": name,
+                    "shape": target_preset.get("shape", {}),
+                    "yolo_class": target_class,
+                    "conf_threshold": _conf_for_preset(objects, target_preset),
+                })
         resolved_pick_type = pick_type if pick_type is not None else preset.get("pick_type", "toolhead_close")
         result = move_to_object(
             shape=shape,
@@ -1437,14 +1504,17 @@ class ArmProxy:
             use_robot=True,
             offset=tuple(offset) if offset is not None else None,
             ignore_z=ignore_z,
-            object_name=object_name,
+            object_name=object_names[0],
             min_frames=min_frames,
             iou_threshold=iou_threshold,
+            targets=targets,
+            available=available,
+            filter=filter,
             **kwargs,
         )
         if raise_on_not_found and result.get("moves_done", 0) == 0:
             raise ObjectNotFoundError(
-                f"Object '{object_name}' not detected after {repeat}x{average_frames} frames"
+                f"Object '{object_names}' not detected after {repeat}x{average_frames} frames"
             )
         return result
 
@@ -1638,6 +1708,120 @@ def _get_dominant_color(image: np.ndarray, bbox: Tuple[float, float, float, floa
         return "purple"
     else:
         return "pink"
+
+
+def _palette_to_hsv(available: Dict[str, str]) -> Tuple[List[str], np.ndarray]:
+    """Convert a color-name -> hex palette into HSV centers.
+
+    Hue is the most stable signal for the cap colors. Lab/RGB nearest-color
+    matching overweights brightness, so yellow/orange/red drift under shadows.
+    """
+    names: List[str] = []
+    bgr_values: List[List[int]] = []
+    for name, hex_color in available.items():
+        value = str(hex_color).strip()
+        if value.startswith("#"):
+            value = value[1:]
+        if len(value) != 6:
+            raise ValueError(f"Invalid hex color for '{name}': {hex_color!r}")
+        try:
+            r = int(value[0:2], 16)
+            g = int(value[2:4], 16)
+            b = int(value[4:6], 16)
+        except ValueError as exc:
+            raise ValueError(f"Invalid hex color for '{name}': {hex_color!r}") from exc
+        names.append(str(name).strip().lower())
+        bgr_values.append([b, g, r])
+
+    if not bgr_values:
+        raise ValueError("'available' must contain at least one color")
+
+    bgr = np.array(bgr_values, dtype=np.uint8).reshape(-1, 1, 3)
+    hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV).reshape(-1, 3).astype(np.float32)
+    return names, hsv
+
+
+def _mask_to_bbox_roi(
+    mask: Any,
+    image_shape: Tuple[int, ...],
+    x1: int,
+    y1: int,
+    x2: int,
+    y2: int,
+) -> Optional[np.ndarray]:
+    """Return a boolean ROI mask aligned to bbox pixels, or None."""
+    if mask is None:
+        return None
+    try:
+        mask_arr = mask.detach().cpu().numpy() if hasattr(mask, "detach") else np.asarray(mask)
+    except Exception:
+        return None
+    if mask_arr.ndim > 2:
+        mask_arr = np.squeeze(mask_arr)
+    if mask_arr.size == 0:
+        return None
+
+    h, w = image_shape[:2]
+    if mask_arr.shape[:2] != (h, w):
+        mask_arr = cv2.resize(mask_arr.astype(np.float32), (w, h), interpolation=cv2.INTER_LINEAR)
+    roi_mask = mask_arr[y1:y2, x1:x2] > 0.5
+    return roi_mask if roi_mask.any() else None
+
+
+def _classify_detection_color(
+    image: np.ndarray,
+    bbox: Tuple[float, float, float, float],
+    names: List[str],
+    hsv_centers: np.ndarray,
+    mask: Any = None,
+) -> str:
+    """Classify object pixels by hue-nearest palette color and majority vote."""
+    x1, y1, x2, y2 = int(bbox[0]), int(bbox[1]), int(bbox[2]), int(bbox[3])
+    h, w = image.shape[:2]
+    x1, y1 = max(0, x1), max(0, y1)
+    x2, y2 = min(w, x2), min(h, y2)
+    if x2 <= x1 or y2 <= y1:
+        return "unknown"
+
+    roi = image[y1:y2, x1:x2]
+    if roi.size == 0:
+        return "unknown"
+
+    roi_mask = _mask_to_bbox_roi(mask, image.shape, x1, y1, x2, y2)
+    if roi_mask is None:
+        # Bbox edges often include background; center-crop when no mask exists.
+        roi_h, roi_w = roi.shape[:2]
+        pad_x = int(roi_w * 0.15)
+        pad_y = int(roi_h * 0.15)
+        if roi_w - 2 * pad_x > 1 and roi_h - 2 * pad_y > 1:
+            roi = roi[pad_y:roi_h - pad_y, pad_x:roi_w - pad_x]
+        pixels = roi.reshape(-1, 3)
+    else:
+        pixels = roi[roi_mask]
+
+    if pixels.size == 0:
+        return "unknown"
+    if len(pixels) > 4096:
+        step = max(1, len(pixels) // 4096)
+        pixels = pixels[::step]
+
+    hsv = cv2.cvtColor(pixels.reshape(-1, 1, 3), cv2.COLOR_BGR2HSV).reshape(-1, 3).astype(np.float32)
+    saturated = (hsv[:, 1] >= 45) & (hsv[:, 2] >= 35) & (hsv[:, 2] <= 250)
+    if saturated.any():
+        hsv = hsv[saturated]
+    if hsv.size == 0:
+        return "unknown"
+
+    # Circular hue distance in OpenCV's 0..179 hue space. Saturation/value only
+    # break ties so red/orange/yellow are separated by chroma, not brightness.
+    hue_delta = np.abs(hsv[:, None, 0] - hsv_centers[None, :, 0])
+    hue_dist = np.minimum(hue_delta, 180.0 - hue_delta)
+    sat_dist = np.abs(hsv[:, None, 1] - hsv_centers[None, :, 1]) / 255.0
+    val_dist = np.abs(hsv[:, None, 2] - hsv_centers[None, :, 2]) / 255.0
+    distances = hue_dist + (2.0 * sat_dist) + val_dist
+    nearest = np.argmin(distances, axis=1)
+    counts = np.bincount(nearest, minlength=len(names))
+    return names[int(np.argmax(counts))]
 
 
 def get_latest_detections_detailed() -> List[Dict[str, Any]]:
@@ -1853,6 +2037,12 @@ def _aggregate_detections(
             "conf": float(np.mean([d["conf"] for d in track])),
             "frame_count": len(track),
         }
+        for key in ("object_name", "yolo_class"):
+            if track[0].get(key) is not None:
+                avg_det[key] = track[0][key]
+        colors = [str(d["color"]).lower() for d in track if d.get("color")]
+        if colors:
+            avg_det["color"] = max(set(colors), key=colors.count)
         tool_pts = [d["p_tool_mm"] for d in track if d.get("p_tool_mm") is not None]
         if tool_pts:
             avg_det["p_tool_mm"] = np.mean(np.array(tool_pts), axis=0)
@@ -2065,9 +2255,12 @@ def move_to_object(
     ignore_z: bool = True,
     arm_name: Optional[str] = None,
     camera_arm: Optional[str] = None,
-    object_name: Optional[str] = None,
+    object_name: Optional[Union[str, Sequence[str]]] = None,
     min_frames: int = 1,
     iou_threshold: float = 0.7,
+    targets: Optional[Sequence[Dict[str, Any]]] = None,
+    available: Optional[Dict[str, str]] = None,
+    filter: Optional[Union[str, Sequence[str]]] = None,
 ) -> Dict[str, Any]:
     """Move toolhead to the selected object using camera, YOLO, calibration and arm().
 
@@ -2099,6 +2292,10 @@ def move_to_object(
         (dx, dy) or (dx, dy, dz) in mm added to object position.
     ignore_z : bool
         If True (default), only move in x,y; dz is forced to 0.
+    available : dict | None
+        Optional color palette, e.g. {"green": "#27ae60"}.
+    filter : str | sequence | None
+        Optional palette color name(s) to keep before applying pick_type.
     """
     from aira.vision.vision import (
         parse_shape,
@@ -2132,9 +2329,8 @@ def move_to_object(
     T_cam_to_tool = cal["T_cam_to_tool"]
     K = cal["K"]
     tare_arr = np.array(tare_mm if tare_mm is not None else cal["tare_mm"], dtype=np.float64)
-    shape_norm = parse_shape(shape)
 
-    model = yolo_for_object(object_name) if object_name else yolo()
+    model = yolo_for_object(object_name) if isinstance(object_name, str) and object_name else yolo()
     classes = getattr(model, "names", None)
     if classes is not None and isinstance(classes, dict):
         classes = [classes[i] for i in sorted(classes.keys())]
@@ -2144,7 +2340,44 @@ def move_to_object(
             "50ml eppendorf tube", "50Ml eppendorf cap", "50Ml 4 way rack",
             "4 way rack 50ml hole", "4 way rack 5ml hole",
         ]
-    cls_idx = resolve_class_to_index(classes, yolo_class)
+
+    if filter is None:
+        color_filter: Optional[set] = None
+    elif isinstance(filter, str):
+        color_filter = {filter.strip().lower()}
+    else:
+        color_filter = {str(c).strip().lower() for c in filter}
+
+    palette_names: Optional[List[str]] = None
+    palette_hsv: Optional[np.ndarray] = None
+    if available is not None:
+        palette_names, palette_hsv = _palette_to_hsv(available)
+    elif color_filter:
+        raise ValueError("'available' palette is required when using color filter")
+
+    target_specs = list(targets) if targets is not None else [{
+        "shape": shape,
+        "yolo_class": yolo_class,
+        "conf_threshold": conf_threshold,
+        "object_name": object_name,
+    }]
+    target_by_cls: Dict[int, Dict[str, Any]] = {}
+    for target in target_specs:
+        target_yolo_class = target.get("yolo_class", yolo_class)
+        target_conf = float(target.get("conf_threshold", target.get("confidence", conf_threshold)))
+        if isinstance(target_yolo_class, (list, tuple)):
+            target_classes = target_yolo_class
+        else:
+            target_classes = [target_yolo_class]
+        for target_class in target_classes:
+            target_idx = resolve_class_to_index(classes, target_class)
+            target_by_cls[target_idx] = {
+                "shape_norm": parse_shape(target.get("shape", shape)),
+                "conf_threshold": target_conf,
+                "object_name": target.get("object_name"),
+                "yolo_class": target_class,
+            }
+    model_conf_threshold = min(t["conf_threshold"] for t in target_by_cls.values())
 
     cam = camera(arm_name=effective_camera_arm) if use_camera_singleton else None
     if cam is None:
@@ -2152,12 +2385,15 @@ def move_to_object(
 
     robot = arm(name=effective_arm_name, ip=robot_ip) if use_robot else None
 
-    use_global_viewer = False
-    if display:
-        start_vision_display()
-        use_global_viewer = _is_vision_display_running()
-        if not use_global_viewer:
-            cv2.namedWindow("Center on Object", cv2.WINDOW_AUTOSIZE)
+    # When the global vision display thread is already running, reuse its
+    # frame queue instead of opening a second HighGUI window. Two threads
+    # driving OpenCV's Qt backend on Linux deadlocks/segfaults.
+    use_global_viewer = display and _is_vision_display_running()
+    if display and not use_global_viewer:
+        # Keep OpenCV/Qt window handling on the caller's thread. Creating or
+        # destroying HighGUI windows from the background vision thread can
+        # segfault with Qt timer errors on Linux.
+        cv2.namedWindow("Center on Object", cv2.WINDOW_AUTOSIZE)
 
     moves_done = 0
     final_xy_tool_mm = None
@@ -2202,27 +2438,47 @@ def move_to_object(
                 if queue_results is not None:
                     results = queue_results
                 else:
-                    results = model.predict(color_image, conf=conf_threshold, imgsz=640, verbose=False)
+                    results = model.predict(color_image, conf=model_conf_threshold, imgsz=640, verbose=False)
                 frame_dets: List[Dict[str, Any]] = []
                 if results and len(results) > 0 and results[0].boxes is not None:
-                    boxes = results[0].boxes
+                    result0 = results[0]
+                    boxes = result0.boxes
+                    masks = getattr(result0, "masks", None)
+                    mask_data = getattr(masks, "data", None) if masks is not None else None
                     for i in range(len(boxes)):
-                        if int(boxes.cls[i]) != cls_idx:
+                        cls_id = int(boxes.cls[i])
+                        target = target_by_cls.get(cls_id)
+                        if target is None:
                             continue
-                        if float(boxes.conf[i]) < conf_threshold:
+                        det_conf = float(boxes.conf[i])
+                        if det_conf < target["conf_threshold"]:
                             continue
                         box = boxes.xyxy[i].cpu().numpy()
                         x1, y1, x2, y2 = map(float, box)
-                        p_cam = object_point_3d_camera((x1, y1, x2, y2), shape_norm, K)
+                        p_cam = object_point_3d_camera((x1, y1, x2, y2), target["shape_norm"], K)
                         if not np.isfinite(p_cam).all():
                             continue
                         pt = camera_to_tool(p_cam, T_cam_to_tool) + tare_arr
-                        frame_dets.append({
+                        mask = None
+                        if mask_data is not None:
+                            try:
+                                if i < len(mask_data):
+                                    mask = mask_data[i]
+                            except Exception:
+                                mask = None
+                        det = {
                             "bbox_xyxy": (x1, y1, x2, y2),
-                            "class_id": cls_idx,
-                            "conf": float(boxes.conf[i]),
+                            "class_id": cls_id,
+                            "conf": det_conf,
                             "p_tool_mm": pt,
-                        })
+                            "object_name": target.get("object_name"),
+                            "yolo_class": target.get("yolo_class"),
+                        }
+                        if palette_names is not None and palette_hsv is not None:
+                            det["color"] = _classify_detection_color(
+                                color_image, (x1, y1, x2, y2), palette_names, palette_hsv, mask=mask,
+                            )
+                        frame_dets.append(det)
                 all_frame_dets.append(frame_dets)
 
                 if display and not use_global_viewer:
@@ -2242,6 +2498,8 @@ def move_to_object(
 
             # --- Phase 2: aggregate across frames by IoU ---
             averaged = _aggregate_detections(all_frame_dets, iou_threshold, min_frames)
+            if color_filter is not None:
+                averaged = [d for d in averaged if str(d.get("color", "")).lower() in color_filter]
             img_shape = last_color_image.shape if last_color_image is not None else (720, 1280, 3)
             chosen = pick_detection(averaged, current_pick_type, img_shape, T_cam_to_tool, tare_arr)
 
@@ -2255,9 +2513,12 @@ def move_to_object(
                     cv2.rectangle(disp, (int(b[0]), int(b[1])), (int(b[2]), int(b[3])), clr, 2)
                     fc = d.get("frame_count", 0)
                     label = f"f={fc}"
+                    if d.get("color"):
+                        label = f"{d['color']} {label}"
                     if is_chosen and d.get("p_tool_mm") is not None:
                         pt = d["p_tool_mm"]
-                        label = f"[{pt[0]:.1f},{pt[1]:.1f},{pt[2]:.1f}]mm f={fc}"
+                        color_label = f"{d['color']} " if d.get("color") else ""
+                        label = f"{color_label}[{pt[0]:.1f},{pt[1]:.1f},{pt[2]:.1f}]mm f={fc}"
                     cv2.putText(disp, label, (int(b[0]), int(b[1]) - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, clr, 2)
                 n_tracks = len(averaged)
@@ -2303,8 +2564,10 @@ def move_to_object(
                         )
                         if code == 0:
                             moves_done += 1
-                        elif robot.check_error():
-                            robot.clear_error()
+                        else:
+                            if robot.check_error():
+                                robot.clear_error()
+                            raise XArmFailure("move_to_object absolute cross-arm move", code)
                 final_xy_tool_mm = (float(p_target[0]), float(p_target[1]))
                 continue
 
@@ -2335,6 +2598,7 @@ def move_to_object(
                 else:
                     if robot.check_error():
                         robot.clear_error()
+                    raise XArmFailure("move_to_object tool_move", code)
     finally:
         if display and not use_global_viewer:
             try:

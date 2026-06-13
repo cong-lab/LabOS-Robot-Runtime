@@ -176,19 +176,63 @@ def camera(
     except ImportError:
         raise RuntimeError("pyrealsense2 not installed")
     pipeline = rs.pipeline()
-    config = rs.config()
-    config.enable_stream(
-        rs.stream.color,
-        CALIBRATION_IMAGE_WIDTH,
-        CALIBRATION_IMAGE_HEIGHT,
-        rs.format.bgr8,
-        30,
-    )
-    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-    pipeline.start(config)
+
+    try:
+        ctx = rs.context()
+        for dev in ctx.query_devices():
+            if dev.supports(rs.camera_info.usb_type_descriptor):
+                usb = dev.get_info(rs.camera_info.usb_type_descriptor)
+                if usb and not usb.startswith("3"):
+                    logger.warning(
+                        "RealSense is on USB %s, not USB 3.x; trying lower-fps camera modes",
+                        usb,
+                    )
+                break
+    except Exception:
+        pass
+
+    # Prefer preserving calibration color resolution; lower FPS first for USB 2.0.
+    stream_options = [
+        (CALIBRATION_IMAGE_WIDTH, CALIBRATION_IMAGE_HEIGHT, 640, 480, 30),
+        (CALIBRATION_IMAGE_WIDTH, CALIBRATION_IMAGE_HEIGHT, 640, 480, 15),
+        (CALIBRATION_IMAGE_WIDTH, CALIBRATION_IMAGE_HEIGHT, 640, 480, 6),
+        (848, 480, 848, 480, 15),
+        (848, 480, 848, 480, 6),
+        (640, 480, 640, 480, 15),
+        (640, 480, 640, 480, 6),
+    ]
+    started = False
+    last_error = None
+    for color_w, color_h, depth_w, depth_h, fps in stream_options:
+        try:
+            config = rs.config()
+            config.enable_stream(rs.stream.color, color_w, color_h, rs.format.bgr8, fps)
+            config.enable_stream(rs.stream.depth, depth_w, depth_h, rs.format.z16, fps)
+            pipeline.start(config)
+            for _ in range(30):
+                pipeline.wait_for_frames(timeout_ms=5000)
+            logger.info(
+                "RealSense camera started for arm '%s': color=%sx%s depth=%sx%s fps=%s",
+                key, color_w, color_h, depth_w, depth_h, fps,
+            )
+            if color_w != CALIBRATION_IMAGE_WIDTH or color_h != CALIBRATION_IMAGE_HEIGHT:
+                logger.warning(
+                    "RealSense color resolution %sx%s differs from calibration resolution %sx%s; "
+                    "move_to_object depth estimates may be less accurate",
+                    color_w, color_h, CALIBRATION_IMAGE_WIDTH, CALIBRATION_IMAGE_HEIGHT,
+                )
+            started = True
+            break
+        except RuntimeError as exc:
+            last_error = exc
+            try:
+                pipeline.stop()
+            except Exception:
+                pass
+
+    if not started:
+        raise RuntimeError(f"Failed to start RealSense camera for arm '{key}': {last_error}")
     align = rs.align(rs.stream.color)
-    for _ in range(30):
-        pipeline.wait_for_frames()
     cam = _RealSenseCamera(pipeline, align)
     _camera_singletons[key] = cam
     return cam

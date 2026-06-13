@@ -111,7 +111,8 @@ class YOLORealSenseViewer:
         height: int = 720,
         fps: int = 30,
         use_cv_cap: bool = False,
-        cv_device: int = 0
+        cv_device: int = 0,
+        color_picker: bool = False,
     ):
         self.model_path = model_path
         self.task = task  # "detect" (YOLO-World) or "segment" (YOLO seg, predicts masks)
@@ -126,6 +127,9 @@ class YOLORealSenseViewer:
         self.fps = fps
         self.use_cv_cap = use_cv_cap
         self.cv_device = cv_device
+        self.color_picker = color_picker
+        self._latest_raw_frame = None
+        self._picked_color = None
 
         # RealSense (when not using OpenCV)
         self.pipeline = None
@@ -139,6 +143,27 @@ class YOLORealSenseViewer:
 
         # Colors for each class
         self.colors = self._generate_colors(len(self.classes))
+
+    def _on_mouse(self, event, x, y, flags, param):
+        """Sample and print the raw frame color at the clicked point."""
+        if not self.color_picker or event != cv2.EVENT_LBUTTONDOWN:
+            return
+        frame = self._latest_raw_frame
+        if frame is None:
+            return
+        h, w = frame.shape[:2]
+        if not (0 <= x < w and 0 <= y < h):
+            return
+        b, g, r = map(int, frame[y, x])
+        hex_color = f"#{r:02x}{g:02x}{b:02x}"
+        self._picked_color = {
+            "x": x,
+            "y": y,
+            "bgr": (b, g, r),
+            "rgb": (r, g, b),
+            "hex": hex_color,
+        }
+        print(f"Color picker ({x}, {y}): hex={hex_color} rgb=({r}, {g}, {b}) bgr=({b}, {g}, {r})")
 
     def _generate_colors(self, num_classes: int):
         """Generate distinct colors for each class."""
@@ -180,46 +205,90 @@ class YOLORealSenseViewer:
 
         print("Initializing RealSense camera...")
         self.pipeline = rs.pipeline()
-        config = rs.config()
 
-        # Try requested resolution with fallbacks
+        # Warn early if the camera is connected over USB 2.0, which can't sustain
+        # color + depth at 30 fps and is the usual cause of "Frame didn't arrive".
+        usb_descriptor = self._realsense_usb_descriptor()
+        if usb_descriptor and not usb_descriptor.startswith("3"):
+            print(f"  WARNING: RealSense is on USB {usb_descriptor} (not USB 3.x). "
+                  "Bandwidth is limited; will fall back to lower fps/resolution. "
+                  "For full performance use a USB 3 port and cable.")
+
+        # Try combinations of (resolution, fps), highest bandwidth first.
         resolutions = [
             (self.width, self.height),
             (1280, 720),
             (848, 480),
             (640, 480),
         ]
+        # Deduplicate while preserving order.
+        resolutions = list(dict.fromkeys(resolutions))
+        fps_options = [self.fps, 15, 6]
+        fps_options = list(dict.fromkeys(fps_options))
 
         started = False
-        for w, h in resolutions:
-            try:
-                config = rs.config()
-                config.enable_stream(rs.stream.color, w, h, rs.format.bgr8, self.fps)
-                config.enable_stream(rs.stream.depth, w, h, rs.format.z16, self.fps)
-
-                print(f"  Trying {w}x{h}...")
-                self.profile = self.pipeline.start(config)
-                self.width, self.height = w, h
-                started = True
+        for fps in fps_options:
+            for w, h in resolutions:
+                if self._try_start_realsense(w, h, fps):
+                    self.width, self.height, self.fps = w, h, fps
+                    started = True
+                    break
+            if started:
                 break
-            except RuntimeError:
-                continue
 
         if not started:
-            print("Failed to start RealSense with any resolution!")
+            print("Failed to start RealSense with any resolution/fps combination!")
             return False
 
         # Create alignment object
         self.align = rs.align(rs.stream.color)
 
-        print(f"  Camera started: {self.width}x{self.height}")
-
-        # Warm up
-        print("  Warming up camera...")
-        for _ in range(30):
-            self.pipeline.wait_for_frames()
-
+        print(f"  Camera started: {self.width}x{self.height} @ {self.fps} fps")
         return True
+
+    def _try_start_realsense(self, w: int, h: int, fps: int) -> bool:
+        """Start the pipeline at (w, h, fps) and confirm frames actually arrive.
+
+        Returns True only if warm-up frames are received; otherwise stops the
+        pipeline and returns False so the caller can try the next combination.
+        """
+        try:
+            config = rs.config()
+            config.enable_stream(rs.stream.color, w, h, rs.format.bgr8, fps)
+            config.enable_stream(rs.stream.depth, w, h, rs.format.z16, fps)
+
+            print(f"  Trying {w}x{h} @ {fps} fps...")
+            self.profile = self.pipeline.start(config)
+        except RuntimeError:
+            return False
+
+        # Verify frames actually arrive. On USB 2.0 start() can succeed but
+        # wait_for_frames() then times out, so this is the real test.
+        print("  Warming up camera...")
+        try:
+            for _ in range(30):
+                self.pipeline.wait_for_frames(timeout_ms=5000)
+            return True
+        except RuntimeError:
+            print(f"  No frames at {w}x{h} @ {fps} fps; trying a lower setting...")
+            try:
+                self.pipeline.stop()
+            except RuntimeError:
+                pass
+            self.profile = None
+            return False
+
+    @staticmethod
+    def _realsense_usb_descriptor():
+        """Return the negotiated USB descriptor (e.g. '2.1', '3.2') if available."""
+        try:
+            ctx = rs.context()
+            for dev in ctx.query_devices():
+                if dev.supports(rs.camera_info.usb_type_descriptor):
+                    return dev.get_info(rs.camera_info.usb_type_descriptor)
+        except Exception:
+            pass
+        return None
 
     def stop_camera(self):
         """Stop camera (RealSense or OpenCV)."""
@@ -369,6 +438,8 @@ class YOLORealSenseViewer:
         print("  Q/ESC  - Quit")
         print("  M      - Toggle masks")
         print("  +/-    - Adjust confidence threshold")
+        if self.color_picker:
+            print("  Click  - Print pixel color as hex/RGB/BGR")
         print("="*60 + "\n")
 
         # Load model
@@ -380,6 +451,8 @@ class YOLORealSenseViewer:
             return
 
         cv2.namedWindow('YOLO Detection', cv2.WINDOW_AUTOSIZE)
+        if self.color_picker:
+            cv2.setMouseCallback('YOLO Detection', self._on_mouse)
 
         frame_count = 0
         import time
@@ -392,6 +465,7 @@ class YOLORealSenseViewer:
                 color_image, depth_image = self.get_frames()
                 if color_image is None:
                     continue
+                self._latest_raw_frame = color_image
 
                 # Run inference (use min of per-class thresholds so low-conf objects like genie hole appear)
                 results = self.model.predict(
@@ -416,6 +490,21 @@ class YOLORealSenseViewer:
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 cv2.putText(display_image, f"Masks: {'ON' if self.show_masks else 'OFF'}", (10, 90),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                if self.color_picker:
+                    cv2.putText(display_image, "Color picker: click a pixel", (10, 120),
+                               cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+                    if self._picked_color is not None:
+                        picked = self._picked_color
+                        x, y = picked["x"], picked["y"]
+                        cv2.drawMarker(
+                            display_image, (x, y), (0, 255, 255),
+                            markerType=cv2.MARKER_CROSS, markerSize=18, thickness=2,
+                        )
+                        cv2.putText(
+                            display_image,
+                            f"{picked['hex']} RGB{picked['rgb']} @ ({x},{y})",
+                            (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2,
+                        )
 
                 # Show
                 cv2.imshow('YOLO Detection', display_image)
@@ -497,8 +586,8 @@ Examples:
 
     parser.add_argument('--task', type=str, choices=('detect', 'segment'), default='segment',
                        help='Task: detect (YOLO-World bbox) or segment (YOLO seg, predicts masks) (default: segment)')
-    parser.add_argument('--model', type=str, default=default_model,
-                       help='Path to model weights (default: auto-detect best.pt from runs/segment or runs/detect)')
+    parser.add_argument('--model', type=str, default=None,
+                       help=f'Path to model weights (default: {default_model})')
     parser.add_argument('--data-yaml', type=str, default=default_yaml,
                        help='Dataset YAML to load classes from (default: configs/dataset.yaml)')
     parser.add_argument('--classes', type=str, nargs='+', default=None,
@@ -517,6 +606,8 @@ Examples:
                        help='Use OpenCV VideoCapture (webcam) instead of RealSense')
     parser.add_argument('--cv-device', type=int, default=1,
                        help='Webcam device index for --cv-cap (default: 0)')
+    parser.add_argument('--color_picker', action='store_true',
+                       help='Click the viewer to print the raw pixel color as hex/RGB/BGR')
 
     args = parser.parse_args()
 
@@ -534,14 +625,16 @@ Examples:
 
     # Determine model path and task (auto-detect best.pt when using default)
     task = args.task
-    model_path = args.model
-    if model_path == default_model:
+    model_path = args.model or default_model
+    if args.model is None:
         best_model = find_best_model(task=task)
         if best_model:
             model_path = str(best_model)
             if "segment" in model_path:
                 task = "segment"
             print(f"Found trained model: {model_path} (task={task})")
+        elif Path(default_model).exists():
+            print(f"Using default model: {model_path}")
         else:
             if task == "segment":
                 model_path = "yolov8s-seg.pt"
@@ -579,7 +672,8 @@ Examples:
         height=args.height,
         fps=args.fps,
         use_cv_cap=args.cv_cap,
-        cv_device=args.cv_device
+        cv_device=args.cv_device,
+        color_picker=args.color_picker,
     )
 
     try:

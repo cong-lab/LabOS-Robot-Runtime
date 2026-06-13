@@ -5,5 +5,7 @@ opencv-python-headless
 pyyaml
 xarm-python-sdk
 pyrealsense2
+pyserial
 mcp
 labos-tool-client @ git+https://github.com/cong-lab/LabOS-Python-API.git
+livekit
